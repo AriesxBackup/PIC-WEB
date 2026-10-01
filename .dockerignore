@@ -1,0 +1,12 @@
+.git
+node_modules
+.next
+data
+tests/e2e/screenshots
+npm-debug.log*
+.env*
+!.env.example
+Dockerfile
+docker-compose.yml
+Caddyfile
+demo-data
