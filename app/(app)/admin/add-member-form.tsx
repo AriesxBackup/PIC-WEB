@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Copy, Dices } from "lucide-react";
+import { BadgeCheck, Copy, Dices } from "lucide-react";
 import { toast } from "sonner";
 import { SubmitButton } from "@/components/form-controls";
 import { spring, springSoft } from "@/components/motion";
@@ -41,7 +41,7 @@ export function AddMemberForm({ siteUrl }: { siteUrl: string }) {
   const fields = state?.fields ?? {};
 
   const shareText = created
-    ? `Hi ${created.name}! You're on our reel board 🎬\n${siteUrl ? `Open: ${siteUrl}\n` : ""}Email: ${created.email}\nPassword: ${created.password}`
+    ? `Hi ${created.name}! You're on our reel board\n${siteUrl ? `Open: ${siteUrl}\n` : ""}Email: ${created.email}\nPassword: ${created.password}`
     : "";
 
   return (
@@ -123,7 +123,9 @@ export function AddMemberForm({ siteUrl }: { siteUrl: string }) {
             className="glass card-surface relative overflow-hidden rounded-2xl border border-emerald-500/30 p-4 text-sm shadow-lg shadow-emerald-500/10"
           >
             <span aria-hidden className="absolute inset-x-8 top-0 h-px bg-linear-to-r from-transparent via-emerald-400/60 to-transparent" />
-            <p className="font-semibold text-emerald-900 dark:text-emerald-100">✅ {created.name} was added</p>
+            <p className="flex items-center gap-1.5 font-semibold text-emerald-900 dark:text-emerald-100">
+              <BadgeCheck className="size-4" aria-hidden /> {created.name} was added
+            </p>
             <pre className="mt-2 whitespace-pre-wrap rounded-xl bg-surface p-3 font-mono text-xs leading-relaxed">{shareText}</pre>
             <div className="mt-3 flex flex-wrap gap-2">
               <button

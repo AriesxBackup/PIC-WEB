@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Pencil } from "lucide-react";
+import { Lightbulb, Pencil } from "lucide-react";
 import { spring } from "@/components/motion";
 import { SubmitButton } from "@/components/form-controls";
 import { TagInput } from "@/components/tag-input";
@@ -78,7 +78,9 @@ export function IdeaEditor({
         >
           <div className="card-surface rounded-2xl p-4 sm:p-5">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <h2 className="eyebrow text-brand">💡 The idea</h2>
+              <h2 className="eyebrow flex items-center gap-1 text-brand">
+                <Lightbulb className="size-3.5" aria-hidden /> The idea
+              </h2>
               {canEdit ? (
                 <button type="button" onClick={() => setEditing(true)} className={cn(button.ghost, "-my-1.5 px-2 py-1.5 text-xs")}>
                   <Pencil className="size-3.5" /> Edit

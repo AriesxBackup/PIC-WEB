@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, MessageCircle } from "lucide-react";
+import { ArrowUpRight, Lightbulb, MessageCircle } from "lucide-react";
 import { motion } from "motion/react";
 import type { ReelSummary } from "@/lib/data/reels";
 import { reelUrl } from "@/lib/instagram";
@@ -48,7 +48,9 @@ export function ReelCard({ reel, index = 0 }: { reel: ReelSummary; index?: numbe
           href={`/reels/${reel.id}`}
           className="group block rounded-xl border border-border/60 bg-surface-2 px-3.5 py-3 transition-colors duration-200 ease-brand hover:border-accent/40 hover:bg-brand-soft"
         >
-          <p className="eyebrow mb-1.5 text-brand">💡 Idea</p>
+          <p className="eyebrow mb-1.5 flex items-center gap-1 text-brand">
+            <Lightbulb className="size-3.5" aria-hidden /> Idea
+          </p>
           <p className="line-clamp-5 whitespace-pre-line text-[15px] leading-snug [overflow-wrap:anywhere]">{reel.idea}</p>
           {reel.tags.length ? (
             <p className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-xs font-medium text-muted">

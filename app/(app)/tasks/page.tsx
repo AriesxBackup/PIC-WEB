@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Layers, PartyPopper, Rocket } from "lucide-react";
 import { CompactReel } from "@/components/compact-reel";
 import { Reveal } from "@/components/motion";
 import { EmptyState, PageHeader } from "@/components/ui";
@@ -40,7 +41,10 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
           ))}
         </div>
       ) : (
-        <EmptyState icon={everyone ? "🗂️" : "🎉"} title={everyone ? "Nothing assigned" : "You're all caught up"}>
+        <EmptyState
+          icon={everyone ? <Layers className="size-7" aria-hidden /> : <PartyPopper className="size-7" aria-hidden />}
+          title={everyone ? "Nothing assigned" : "You're all caught up"}
+        >
           {everyone
             ? "When the admin assigns a reel to someone, it shows up here."
             : "When the admin assigns you a reel to make, it'll show up here."}
@@ -49,7 +53,9 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
 
       {posted.length ? (
         <section className="mt-10">
-          <h2 className="mb-3 font-semibold">Recently posted 🚀</h2>
+          <h2 className="mb-3 inline-flex items-center gap-2 font-semibold">
+            <Rocket className="size-4" aria-hidden /> Recently posted
+          </h2>
           <div className="space-y-2.5">
             {posted.map((reel, index) => (
               <Reveal key={reel.id} inView delay={Math.min(index * 0.06, 0.3)}>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { KeyRound, Pencil, Power, Trash2 } from "lucide-react";
 import { Avatar } from "@/components/avatar";
@@ -36,7 +37,9 @@ export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: bool
         <Avatar person={member} size="md" className={cn(!member.active && "opacity-50")} />
         <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-medium">
-            <span className="truncate">{member.name}</span>
+            <Link href={`/profile/${member.id}`} className="truncate hover:text-accent hover:underline">
+              {member.name}
+            </Link>
             {isSelf ? <span className="text-xs text-muted">(you)</span> : null}
             {member.role === "admin" ? (
               <span className="bg-brand-soft text-brand rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-accent/25">

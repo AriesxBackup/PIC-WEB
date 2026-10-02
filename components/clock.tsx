@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { Calendar } from "lucide-react";
 import { cn, daysBetween, formatDueDate, formatRelative, formatShortDate, localDate } from "@/lib/utils";
 
 function subscribe(onChange: () => void) {
@@ -62,7 +63,7 @@ export function DueBadge({ date, done, className }: { date: string; done?: boole
         className,
       )}
     >
-      <span aria-hidden>📅</span>
+      <Calendar className="size-3.5" aria-hidden />
       {label}
     </span>
   );

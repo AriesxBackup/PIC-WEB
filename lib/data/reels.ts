@@ -35,8 +35,10 @@ type SummaryRow = {
   updated_at: number;
   author_id: number | null;
   author_name: string | null;
+  author_avatar_v: number | null;
   assignee_id: number | null;
   assignee_name: string | null;
+  assignee_avatar_v: number | null;
   tags: string[];
   vote_count: number;
   voted: boolean;
@@ -46,8 +48,8 @@ type SummaryRow = {
 // $1 is always the viewer's user id (for "did I vote?").
 const SELECT_SUMMARY = `
   SELECT r.id, r.shortcode, r.kind, r.ig_author, r.idea, r.status, r.due_date, r.created_at, r.updated_at,
-         r.created_by AS author_id, au.name AS author_name,
-         r.assignee_id, asg.name AS assignee_name,
+         r.created_by AS author_id, au.name AS author_name, au.avatar_version AS author_avatar_v,
+         r.assignee_id, asg.name AS assignee_name, asg.avatar_version AS assignee_avatar_v,
          COALESCE((SELECT array_agg(t.tag ORDER BY t.tag) FROM reel_tags t WHERE t.reel_id = r.id), '{}') AS tags,
          (SELECT COUNT(*)::int FROM votes v WHERE v.reel_id = r.id) AS vote_count,
          EXISTS (SELECT 1 FROM votes v WHERE v.reel_id = r.id AND v.user_id = $1) AS voted,
@@ -67,10 +69,13 @@ function toSummary(row: SummaryRow): ReelSummary {
     dueDate: row.due_date,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    author: row.author_id !== null && row.author_name !== null ? { id: row.author_id, name: row.author_name } : null,
+    author:
+      row.author_id !== null && row.author_name !== null
+        ? { id: row.author_id, name: row.author_name, avatarV: row.author_avatar_v || undefined }
+        : null,
     assignee:
       row.assignee_id !== null && row.assignee_name !== null
-        ? { id: row.assignee_id, name: row.assignee_name }
+        ? { id: row.assignee_id, name: row.assignee_name, avatarV: row.assignee_avatar_v || undefined }
         : null,
     tags: row.tags ?? [],
     voteCount: row.vote_count,

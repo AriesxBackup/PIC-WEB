@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ClipboardPaste, X } from "lucide-react";
+import { Check, ClipboardPaste, X } from "lucide-react";
 import { toast } from "sonner";
 import { TimeAgo } from "@/components/clock";
 import { spring } from "@/components/motion";
@@ -129,7 +129,7 @@ export function NewReelForm({ initialUrl, knownTags }: { initialUrl: string; kno
             transition={spring}
             className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm shadow-lg shadow-black/5 backdrop-blur-xl"
           >
-            <p className="font-semibold text-amber-900 dark:text-amber-100">Already on the board 🙌</p>
+            <p className="font-semibold text-amber-900 dark:text-amber-100">Already on the board</p>
             <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
               {duplicate ? (
                 <>
@@ -153,7 +153,9 @@ export function NewReelForm({ initialUrl, knownTags }: { initialUrl: string; kno
             className="space-y-3"
           >
             <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 py-1.5 pl-4 pr-1.5 text-sm shadow-lg shadow-black/5 backdrop-blur-xl">
-              <span className="flex-1 font-medium text-emerald-800 dark:text-emerald-200">✓ Reel found</span>
+              <span className="flex flex-1 items-center gap-1.5 font-medium text-emerald-800 dark:text-emerald-200">
+                <Check className="size-4" aria-hidden /> Reel found
+              </span>
               <button
                 type="button"
                 onClick={() => setShowPreview((shown) => !shown)}

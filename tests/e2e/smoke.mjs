@@ -163,7 +163,7 @@ try {
   log("member's tasks: start the assigned reel");
   await member.goto(`${BASE}/tasks`);
   await member.getByText("Recreate this space timelapse").waitFor();
-  await member.getByRole("button", { name: "🎬 Start making it" }).click();
+  await member.getByRole("button", { name: "Start making it" }).click();
   await member.getByText("Moved to In production").waitFor();
   await shot(member, "09-mobile-tasks");
 

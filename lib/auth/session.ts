@@ -10,6 +10,8 @@ export type SessionUser = {
   email: string;
   name: string;
   role: Role;
+  /** Increments on every avatar change; 0 means no profile photo. */
+  avatarVersion: number;
 };
 
 // Only a SHA-256 of the token is stored, so a leaked database can't be used to log in.
@@ -32,8 +34,8 @@ export async function createSession(userId: number): Promise<{ token: string; ex
 
 export async function validateSessionToken(token: string): Promise<SessionUser | null> {
   const id = sessionId(token);
-  const row = await one<{ expires_at: number; id: number; email: string; name: string; role: Role; active: boolean }>(
-    `SELECT s.expires_at, u.id, u.email, u.name, u.role, u.active
+  const row = await one<{ expires_at: number; id: number; email: string; name: string; role: Role; active: boolean; avatar_version: number }>(
+    `SELECT s.expires_at, u.id, u.email, u.name, u.role, u.active, u.avatar_version
      FROM sessions s JOIN users u ON u.id = s.user_id
      WHERE s.id = $1`,
     [id],
@@ -48,7 +50,7 @@ export async function validateSessionToken(token: string): Promise<SessionUser |
   if (row.expires_at - now < SESSION_RENEW_MS) {
     await sql("UPDATE sessions SET expires_at = $1 WHERE id = $2", [now + SESSION_TTL_MS, id]);
   }
-  return { id: row.id, email: row.email, name: row.name, role: row.role };
+  return { id: row.id, email: row.email, name: row.name, role: row.role, avatarVersion: row.avatar_version };
 }
 
 export async function deleteSession(token: string): Promise<void> {

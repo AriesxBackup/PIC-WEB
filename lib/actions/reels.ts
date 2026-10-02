@@ -85,7 +85,7 @@ export async function createReelAction(_prev: FormState, formData: FormData): Pr
     throw error;
   }
 
-  publish({ type: "reel.created", reelId: id, actorId: user.id, message: `${user.name} added a new reel 🎬` });
+  publish({ type: "reel.created", reelId: id, actorId: user.id, message: `${user.name} added a new reel` });
   after(() => warmPreviews([reel.shortcode]));
   redirect(`/reels/${id}?added=1`);
 }
@@ -131,8 +131,8 @@ export async function setStatusAction(reelId: number, status: Status): Promise<{
   if (access.status === status) return {};
 
   await updateReelStatus(reelId, status);
-  const { label, emoji } = STATUS_META[status];
-  await addComment(reelId, user.id, `moved this to ${label} ${emoji}`, "event");
+  const { label } = STATUS_META[status];
+  await addComment(reelId, user.id, `moved this to ${label}`, "event");
   publish({ type: "reel.updated", reelId, actorId: user.id });
   refresh();
   return {};
@@ -165,7 +165,7 @@ export async function assignAction(reelId: number, _prev: FormState, formData: F
     reelId,
     actorId: user.id,
     ...(assignee && assignee.id !== user.id && access.assigneeId !== assignee.id
-      ? { message: `${user.name} assigned you a reel 🎯`, targetUserId: assignee.id }
+      ? { message: `${user.name} assigned you a reel`, targetUserId: assignee.id }
       : {}),
   });
   refresh();

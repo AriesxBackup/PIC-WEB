@@ -7,6 +7,7 @@ import { Search } from "lucide-react";
 import { STATUSES, STATUS_META, type Status } from "@/lib/constants";
 import { feedHref, type FeedQuery } from "@/lib/feed";
 import { cn } from "@/lib/utils";
+import { StatusIcon } from "./status-icon";
 import { input } from "./ui";
 
 // 16px on phones (smaller text makes iOS zoom in on tap), compact on bigger screens.
@@ -64,7 +65,7 @@ export function FeedFilters({
               {status ? (
                 <>
                   <span aria-hidden className="relative">
-                    {STATUS_META[status].emoji}
+                    <StatusIcon status={status} className="size-3.5" />
                   </span>{" "}
                   <span className="relative">{STATUS_META[status].label}</span>
                 </>
@@ -117,7 +118,7 @@ export function FeedFilters({
         </select>
         <select name="sort" defaultValue={query.sort ?? "new"} onChange={(e) => apply(e.currentTarget.form!)} className={select} aria-label="Sort">
           <option value="new">Newest</option>
-          <option value="top">🔥 Most votes</option>
+          <option value="top">Most votes</option>
         </select>
       </form>
     </div>

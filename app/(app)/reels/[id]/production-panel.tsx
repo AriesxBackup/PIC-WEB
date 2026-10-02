@@ -6,6 +6,7 @@ import { Avatar } from "@/components/avatar";
 import { DueBadge } from "@/components/clock";
 import { SubmitButton } from "@/components/form-controls";
 import { StatusBadge } from "@/components/status-badge";
+import { StatusIcon } from "@/components/status-icon";
 import { Card, FormMessage, input } from "@/components/ui";
 import { assignAction, setStatusAction } from "@/lib/actions/reels";
 import { ASSIGNEE_STATUSES, STATUSES, STATUS_META, type Status } from "@/lib/constants";
@@ -39,7 +40,7 @@ export function ProductionPanel({
     startTransition(async () => {
       const result = await setStatusAction(reelId, next);
       if (result.error) toast.error(result.error);
-      else toast.success(`Moved to ${STATUS_META[next].label} ${STATUS_META[next].emoji}`);
+      else toast.success(`Moved to ${STATUS_META[next].label}`);
     });
   }
 
@@ -69,7 +70,7 @@ export function ProductionPanel({
                     pending && !current && "opacity-60",
                   )}
                 >
-                  <span aria-hidden>{meta.emoji}</span>
+                  <StatusIcon status={option} className="size-3.5" />
                   {meta.label}
                 </button>
               );

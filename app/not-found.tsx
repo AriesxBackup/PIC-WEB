@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SearchX } from "lucide-react";
 import { button } from "@/components/ui";
 
 export default function NotFound() {
@@ -7,7 +8,7 @@ export default function NotFound() {
       <div className="glass card-surface w-full max-w-md rounded-3xl border border-border px-6 py-12 shadow-2xl shadow-black/10 dark:shadow-black/50">
         <div className="bg-brand-soft relative mx-auto mb-5 flex size-16 items-center justify-center rounded-2xl text-3xl ring-1 ring-border">
           <span aria-hidden className="absolute inset-0 rounded-2xl shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]" />
-          <span className="relative">🫥</span>
+          <SearchX className="relative size-7" aria-hidden />
         </div>
         <h1 className="text-xl font-bold tracking-tight text-brand">Not found</h1>
         <p className="mt-1.5 text-sm text-muted">This reel or page doesn&apos;t exist (anymore).</p>

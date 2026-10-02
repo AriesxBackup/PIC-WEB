@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { CheckSquare, Columns3, Home, Plus, Settings, Shield } from "lucide-react";
+import { CheckSquare, CircleUserRound, Columns3, Home, Plus, Shield } from "lucide-react";
 import type { ComponentType } from "react";
 import { Avatar } from "./avatar";
 import { Logo } from "./logo";
@@ -22,7 +22,7 @@ export function AppHeader({
   openTasks,
 }: {
   appName: string;
-  user: { id: number; name: string; role: "admin" | "member" };
+  user: { id: number; name: string; role: "admin" | "member"; avatarVersion?: number };
   openTasks: number;
 }) {
   const pathname = usePathname();
@@ -76,12 +76,12 @@ export function AppHeader({
             Add reel
           </Link>
           <Link
-            href="/settings"
+            href="/profile"
             className="rounded-full p-0.5 transition hover:ring-2 hover:ring-accent/40"
-            aria-label="Your account"
-            title={`${user.name} — settings`}
+            aria-label="Your profile"
+            title={`${user.name} — profile`}
           >
-            <Avatar person={user} size="md" className="ring-0" />
+            <Avatar person={{ id: user.id, name: user.name, avatarV: user.avatarVersion || undefined }} size="md" className="ring-0" />
           </Link>
         </div>
       </div>
@@ -97,7 +97,7 @@ export function BottomNav({ isAdmin, openTasks }: { isAdmin: boolean; openTasks:
   ];
   const right: NavItem[] = [
     { href: "/tasks", label: "Tasks", icon: CheckSquare, badge: openTasks },
-    isAdmin ? { href: "/admin", label: "Team", icon: Shield } : { href: "/settings", label: "Me", icon: Settings },
+    isAdmin ? { href: "/admin", label: "Team", icon: Shield } : { href: "/profile", label: "Me", icon: CircleUserRound },
   ];
 
   const renderItem = (item: NavItem) => {

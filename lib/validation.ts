@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MAX_COMMENT_LENGTH, MAX_IDEA_LENGTH, MIN_PASSWORD_LENGTH, ROLES } from "./constants";
+import { MAX_BIO_LENGTH, MAX_COMMENT_LENGTH, MAX_IDEA_LENGTH, MIN_PASSWORD_LENGTH, ROLES } from "./constants";
 
 export const nameSchema = z
   .string()
@@ -58,3 +58,17 @@ export const dueDateSchema = z
     },
     { message: "Pick a valid date." },
   );
+
+export const bioSchema = z
+  .string()
+  .trim()
+  .max(MAX_BIO_LENGTH, { message: `Keep the bio under ${MAX_BIO_LENGTH} characters.` });
+
+/** Instagram handle: stores without the @, lowercase. Empty is allowed. */
+export const igHandleSchema = z
+  .string()
+  .trim()
+  .transform((value) => value.replace(/^@+/, "").toLowerCase())
+  .refine((value) => value === "" || /^[a-z0-9._]{1,30}$/.test(value), {
+    message: "That doesn't look like an Instagram handle.",
+  });

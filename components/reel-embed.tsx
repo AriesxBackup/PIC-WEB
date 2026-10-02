@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Play } from "lucide-react";
+import { ArrowUpRight, ImageOff, Play } from "lucide-react";
 import { embedUrl, reelUrl, type ReelKind } from "@/lib/instagram";
 import { cn } from "@/lib/utils";
 import { button } from "./ui";
@@ -105,9 +105,7 @@ export function ReelEmbed({
     >
       {unavailable ? (
         <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
-          <span className="text-3xl" aria-hidden>
-            🙈
-          </span>
+          <ImageOff className="size-7 text-muted" aria-hidden />
           <p className="text-sm font-semibold text-fg">Can&apos;t play this reel here</p>
           <p className="text-xs text-muted">It may be private, deleted, or blocked from embedding.</p>
           <a href={reelUrl(kind, shortcode)} target="_blank" rel="noreferrer" className={cn(button.secondary, "mt-2")}>

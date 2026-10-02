@@ -1,5 +1,6 @@
 import { STATUS_META, type Status } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { StatusIcon } from "./status-icon";
 
 export function StatusBadge({ status, className }: { status: Status; className?: string }) {
   const meta = STATUS_META[status];
@@ -11,7 +12,7 @@ export function StatusBadge({ status, className }: { status: Status; className?:
         className,
       )}
     >
-      <span aria-hidden>{meta.emoji}</span>
+      <StatusIcon status={status} className="size-3.5" />
       {meta.label}
     </span>
   );

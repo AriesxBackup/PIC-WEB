@@ -289,6 +289,13 @@ export const MIGRATIONS: string[] = [
     created_at   BIGINT  NOT NULL
   );
   `,
+  /* 2: profiles */ `
+  ALTER TABLE users ADD COLUMN bio            TEXT   NOT NULL DEFAULT '';
+  ALTER TABLE users ADD COLUMN ig_handle      TEXT   NOT NULL DEFAULT '';
+  ALTER TABLE users ADD COLUMN avatar_mime    TEXT;
+  ALTER TABLE users ADD COLUMN avatar_data    BYTEA;
+  ALTER TABLE users ADD COLUMN avatar_version BIGINT NOT NULL DEFAULT 0;
+  `,
 ];
 
 /** Applies pending migrations. Safe to call from several processes at once (advisory lock). */

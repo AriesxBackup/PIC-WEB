@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, SkipForward } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { CompactReel } from "@/components/compact-reel";
 import { StatusBadge } from "@/components/status-badge";
@@ -75,7 +75,7 @@ export default async function BoardPage() {
         <details className="group mt-6">
           <summary className="flex min-h-11 cursor-pointer list-none select-none items-center gap-2 rounded-xl px-1 text-sm font-medium text-muted transition-colors duration-200 ease-brand hover:text-fg [&::-webkit-details-marker]:hidden">
             <ChevronRight className="size-4 transition group-open:rotate-90" aria-hidden />
-            ⏭️ Skipped ideas ({board.skipped.length})
+            <SkipForward className="size-4" aria-hidden /> Skipped ideas ({board.skipped.length})
           </summary>
           <div className="mt-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
             {board.skipped.slice(0, COLUMN_LIMIT).map((reel) => (

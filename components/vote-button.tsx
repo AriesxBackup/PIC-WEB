@@ -2,6 +2,7 @@
 
 import { useOptimistic, useTransition } from "react";
 import { motion } from "motion/react";
+import { Flame } from "lucide-react";
 import { toast } from "sonner";
 import { toggleVoteAction } from "@/lib/actions/reels";
 import { AnimatedNumber, spring } from "./motion";
@@ -56,7 +57,7 @@ export function VoteButton({
           animate={{ scale: 1 }}
           transition={spring}
         >
-          🔥
+          <Flame className={cn("size-4 transition", state.voted && "fill-current scale-110")} />
         </motion.span>
       </span>
       <AnimatedNumber value={state.count} />

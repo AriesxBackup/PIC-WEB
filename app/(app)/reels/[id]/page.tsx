@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { after } from "next/server";
-import { ArrowLeft, ArrowUpRight, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, PartyPopper, Trash2 } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { TimeAgo } from "@/components/clock";
 import { ConfirmButton } from "@/components/form-controls";
@@ -46,8 +46,8 @@ export default async function ReelPage({ params, searchParams }: PageProps<"/ree
       </Link>
 
       {added === "1" ? (
-        <p className="mb-5 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-800 shadow-lg shadow-black/5 backdrop-blur-xl dark:text-emerald-200">
-          🎉 Saved! The whole team can see it now.
+        <p className="mb-5 flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-800 shadow-lg shadow-black/5 backdrop-blur-xl dark:text-emerald-200">
+          <PartyPopper className="size-4 shrink-0" aria-hidden /> Saved! The whole team can see it now.
         </p>
       ) : null}
 
@@ -108,7 +108,7 @@ export default async function ReelPage({ params, searchParams }: PageProps<"/ree
                     : "You want to make this"
                   : reel.voteCount > 0
                     ? `${reel.voteCount} teammate${reel.voteCount === 1 ? "" : "s"} want${reel.voteCount === 1 ? "s" : ""} to make this`
-                    : "Tap 🔥 if we should make this"}
+                    : "Tap the flame if we should make this"}
               </p>
               {canEdit ? (
                 <ConfirmButton

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { LogOut, Shield } from "lucide-react";
+import { LogOut, Shield, Smartphone } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { Card, PageHeader, button } from "@/components/ui";
 import { Reveal } from "@/components/motion";
@@ -26,13 +26,16 @@ export default async function SettingsPage() {
 
       <Reveal delay={0}>
         <Card className="flex items-center gap-4 p-4 sm:p-5">
-          <Avatar person={user} size="lg" />
+          <Avatar person={{ id: user.id, name: user.name, avatarV: user.avatarVersion || undefined }} size="lg" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold tracking-tight">{user.name}</p>
             <p className="truncate text-sm text-muted">
               {user.email} · {user.role === "admin" ? "Admin" : "Member"}
             </p>
           </div>
+          <Link href="/profile" className={button.secondary}>
+            View profile
+          </Link>
           {user.role === "admin" ? (
             <Link href="/admin" className={button.secondary}>
               <Shield className="size-4" /> Team
@@ -58,7 +61,9 @@ export default async function SettingsPage() {
       <Reveal delay={0.15}>
         <Card className="space-y-4 p-4 sm:p-5">
           <div>
-            <h2 className="font-semibold">📱 Put {APP_NAME} on your phone</h2>
+            <h2 className="flex items-center gap-2 font-semibold">
+              <Smartphone className="size-4" aria-hidden /> Put {APP_NAME} on your phone
+            </h2>
             <p className="mt-1 text-sm text-muted">Then sharing a reel from Instagram takes two taps.</p>
           </div>
           <div className="space-y-1.5 text-sm">

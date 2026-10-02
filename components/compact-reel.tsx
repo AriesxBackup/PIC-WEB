@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
+import { Flame, MessageCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ReelSummary } from "@/lib/data/reels";
 import { Avatar } from "./avatar";
@@ -45,7 +45,11 @@ export function CompactReel({
         ) : null}
         {reel.dueDate ? <DueBadge date={reel.dueDate} done={reel.status === "posted" || reel.status === "skipped"} /> : null}
         <span className="ml-auto inline-flex items-center gap-2 tabular-nums">
-          {reel.voteCount ? <span>🔥 {reel.voteCount}</span> : null}
+          {reel.voteCount ? (
+            <span className="inline-flex items-center gap-1">
+              <Flame className="size-3.5" aria-hidden /> {reel.voteCount}
+            </span>
+          ) : null}
           {reel.commentCount ? (
             <span className="inline-flex items-center gap-0.5">
               <MessageCircle className="size-3.5" /> {reel.commentCount}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { after } from "next/server";
-import { Plus } from "lucide-react";
+import { Clapperboard, Plus, Search } from "lucide-react";
 import { FeedFilters } from "@/components/feed-filters";
 import { ReelCard } from "@/components/reel-card";
 import { EmptyState, PageHeader, button } from "@/components/ui";
@@ -52,11 +52,11 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
 
       {items.length === 0 ? (
         filtered ? (
-          <EmptyState icon="🔎" title="Nothing matches">
+          <EmptyState icon={<Search className="size-7" aria-hidden />} title="Nothing matches">
             Try another filter, or <Link href="/" className="font-medium text-fg underline">see everything</Link>.
           </EmptyState>
         ) : (
-          <EmptyState icon="🎬" title="No reels yet">
+          <EmptyState icon={<Clapperboard className="size-7" aria-hidden />} title="No reels yet">
             Found a reel worth copying? Tap <b>Add reel</b>, paste the Instagram link and write your idea.
             <div className="mt-4">
               <Link href="/reels/new" className={button.primary}>
