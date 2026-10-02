@@ -28,8 +28,8 @@ export const STATUS_META: Record<Status, { label: string; className: string }> =
   },
 };
 
-/** Statuses an assignee (non-admin) may move their own task between. */
-export const ASSIGNEE_STATUSES: readonly Status[] = ["approved", "in_production", "posted"];
+/** Statuses an assignee (non-admin) may move their own task between. Approving stays an admin decision. */
+export const ASSIGNEE_STATUSES: readonly Status[] = ["in_production", "posted"];
 
 export const ROLES = ["admin", "member"] as const;
 export type Role = (typeof ROLES)[number];

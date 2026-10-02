@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { StatusIcon } from "@/components/status-icon";
 import { Card, FormMessage, input } from "@/components/ui";
 import { assignAction, setStatusAction } from "@/lib/actions/reels";
+import type { FormState } from "@/lib/actions/types";
 import { ASSIGNEE_STATUSES, STATUSES, STATUS_META, type Status } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +33,20 @@ export function ProductionPanel({
   people: Person[];
 }) {
   const [pending, startTransition] = useTransition();
-  const [assignState, assignFormAction] = useActionState(assignAction.bind(null, reelId), undefined);
+  const [assignState, assignFormAction] = useActionState(async (prev: FormState, formData: FormData) => {
+    const result = await assignAction(reelId, prev, formData);
+    if (result && !result.error && !result.fields) {
+      const chosen = String(formData.get("assigneeId") ?? "");
+      const person = people.find((p) => String(p.id) === chosen);
+      const message = !person
+        ? "Assignment removed"
+        : assignee && assignee.id === person.id
+          ? "Assignment saved"
+          : `Assigned to ${person.name}`;
+      toast.success(message);
+    }
+    return result;
+  }, undefined);
 
   const choices: readonly Status[] = isAdmin ? STATUSES : isAssignee && status !== "skipped" ? ASSIGNEE_STATUSES : [];
 

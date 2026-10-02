@@ -142,15 +142,16 @@ try {
   log("member: sees the task and starts it");
   const member = await phone("mia@demo.team");
   await bottomBar(member, "/tasks").tap();
-  const task = member.locator("div.rounded-xl", { hasText: "Phone test: edited on a phone" }).first();
+  const task = member.locator("div.rounded-2xl", { hasText: "Phone test: edited on a phone" }).first();
   await task.getByRole("button", { name: /Start making it/ }).tap();
   await member.getByText("Moved to In production").waitFor();
   await member.goto(BASE + reelPath);
   await member.getByRole("group", { name: "Change status" }).waitFor(); // the assignee can move it along
   await noSideways(member);
 
-  log("member: settings and log out");
-  await bottomBar(member, "/settings").tap();
+  log("member: profile, settings and log out");
+  await bottomBar(member, "/profile").tap();
+  await member.getByRole("link", { name: "Account settings" }).tap();
   await member.getByRole("button", { name: "Log out", exact: true }).tap();
   await member.waitForURL(/\/login/);
 

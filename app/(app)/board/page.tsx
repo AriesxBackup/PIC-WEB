@@ -9,6 +9,7 @@ import { requireUser } from "@/lib/auth/dal";
 import type { Status } from "@/lib/constants";
 import { listBoard } from "@/lib/data/reels";
 import { cn } from "@/lib/utils";
+import { QuickAdvance } from "./quick-advance";
 
 export const metadata: Metadata = { title: "Board" };
 
@@ -51,7 +52,11 @@ export default async function BoardPage() {
               </div>
               <div className="space-y-2.5">
                 {reels.length ? (
-                  reels.slice(0, COLUMN_LIMIT).map((reel) => <CompactReel key={reel.id} reel={reel} />)
+                  reels.slice(0, COLUMN_LIMIT).map((reel) => (
+                    <CompactReel key={reel.id} reel={reel}>
+                      {user.role === "admin" ? <QuickAdvance reelId={reel.id} status={status} /> : null}
+                    </CompactReel>
+                  ))
                 ) : (
                   <div className="glass flex min-h-28 flex-col items-center justify-center rounded-2xl border border-dashed border-border px-4 py-8 text-center shadow-inner shadow-black/[0.03]">
                     <p className="text-xs text-muted">Nothing here yet</p>
