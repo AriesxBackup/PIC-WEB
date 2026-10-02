@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Avatar } from "@/components/avatar";
 import { SubmitButton } from "@/components/form-controls";
 import { Field, FormMessage, button, input } from "@/components/ui";
-import { removeAvatarAction, uploadAvatarAction } from "@/lib/actions/profile";
+import { removeAvatarAction, updateProfileAction, uploadAvatarAction } from "@/lib/actions/profile";
 import type { FormState } from "@/lib/actions/types";
 import { AVATAR_MIME_TYPES, MAX_AVATAR_BYTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";

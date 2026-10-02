@@ -94,7 +94,7 @@ try {
     await bottomBar(admin, "/reels/new").tap();
     await admin.getByRole("button", { name: "Paste" }).tap();
   }
-  await admin.getByText("✓ Reel found").waitFor();
+  await admin.getByText("Reel found").waitFor();
   await admin.getByRole("button", { name: "Show preview" }).tap();
   await admin.locator('iframe[src*="CjiK72CtydN"]').waitFor();
   await admin.getByRole("button", { name: "Hide preview" }).tap();

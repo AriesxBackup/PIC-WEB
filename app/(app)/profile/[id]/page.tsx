@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, Instagram, Settings } from "lucide-react";
+import { ArrowLeft, AtSign, BadgeCheck, Settings } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { Reveal } from "@/components/motion";
 import { button } from "@/components/ui";
@@ -65,7 +65,8 @@ export default async function ProfilePage({ params }: PageProps<"/profile/[id]">
                 rel="noreferrer"
                 className="text-brand mt-2.5 inline-flex min-h-8 items-center gap-1.5 text-sm font-medium hover:underline"
               >
-                <Instagram className="size-4" aria-hidden />@{profile.igHandle}
+                <AtSign className="size-4" aria-hidden />
+                {profile.igHandle}
               </a>
             ) : null}
             {isSelf ? (

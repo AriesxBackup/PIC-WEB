@@ -76,7 +76,7 @@ try {
   log("admin adds a reel with an idea and tags");
   await admin.goto(`${BASE}/reels/new`);
   await admin.fill("#url", `Check this out ${REEL}?igsh=abc123`);
-  await admin.getByText("✓ Reel found").waitFor();
+  await admin.getByText("Reel found").waitFor();
   await admin.getByRole("button", { name: "Show preview" }).click();
   await admin.locator('iframe[src*="instagram.com"]').waitFor();
   await admin.fill("#idea", "Recreate this space timelapse with our product spinning in the dark. Same slow zoom + music swell.");

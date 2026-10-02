@@ -276,7 +276,7 @@ export async function deleteReel(id: number): Promise<void> {
   await sql("DELETE FROM reels WHERE id = $1", [id]);
 }
 
-/** Adds or removes the user's 🔥 vote. */
+/** Adds or removes the user's vote. */
 export async function toggleVote(reelId: number, userId: number): Promise<{ voted: boolean; count: number }> {
   return transaction(async (tx) => {
     const removed = await tx.query("DELETE FROM votes WHERE reel_id = $1 AND user_id = $2 RETURNING 1", [reelId, userId]);
