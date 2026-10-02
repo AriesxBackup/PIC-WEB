@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { Search } from "lucide-react";
 import { STATUSES, STATUS_META, type Status } from "@/lib/constants";
 import { feedHref, type FeedQuery } from "@/lib/feed";
@@ -49,16 +50,26 @@ export function FeedFilters({
               scroll={false}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors duration-150 ease-brand",
-                active ? "bg-brand text-white shadow-sm shadow-pink-600/25" : "border border-border bg-surface text-muted hover:text-fg",
+                "relative inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors duration-150 ease-brand",
+                active ? "text-on-brand" : "border border-border bg-surface text-muted hover:text-fg",
               )}
             >
+              {active ? (
+                <motion.span
+                  layoutId="feed-status-pill"
+                  className="bg-brand absolute inset-0 rounded-full shadow-sm shadow-black/15"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+              ) : null}
               {status ? (
                 <>
-                  <span aria-hidden>{STATUS_META[status].emoji}</span> {STATUS_META[status].label}
+                  <span aria-hidden className="relative">
+                    {STATUS_META[status].emoji}
+                  </span>{" "}
+                  <span className="relative">{STATUS_META[status].label}</span>
                 </>
               ) : (
-                "All ideas"
+                <span className="relative">All ideas</span>
               )}
             </Link>
           );

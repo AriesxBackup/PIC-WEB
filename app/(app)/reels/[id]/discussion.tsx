@@ -36,7 +36,7 @@ export function Discussion({ reelId, comments, me }: { reelId: number; comments:
             return (
               <li key={comment.id} className="group flex gap-2.5">
                 <Avatar person={comment.author} size="sm" className="mt-0.5" />
-                <div className="min-w-0 flex-1 rounded-2xl rounded-tl-md bg-surface-2 px-3.5 py-2.5">
+                <div className="card-surface min-w-0 flex-1 rounded-2xl rounded-tl-md bg-surface-2 px-3.5 py-2.5 transition duration-200 ease-brand hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/30">
                   <p className="flex items-baseline gap-2 text-sm">
                     <b className="font-semibold">{name}</b>
                     <TimeAgo time={comment.createdAt} className="text-xs text-muted" />

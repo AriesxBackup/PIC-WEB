@@ -16,7 +16,7 @@ export default async function NewReelPage({ searchParams }: PageProps<"/reels/ne
     <div className="mx-auto max-w-xl">
       <PageHeader title="Add a reel" subtitle="Paste an Instagram link and tell the team what we could make with it." />
       {sharedText && !initialUrl ? (
-        <p className="mb-5 rounded-xl bg-amber-500/10 px-3.5 py-2.5 text-sm text-amber-800 dark:text-amber-200">
+        <p className="mb-5 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3.5 py-2.5 text-sm text-amber-800 shadow-lg shadow-black/5 backdrop-blur-xl dark:text-amber-200">
           We couldn&apos;t find an Instagram link in what you shared (“{sharedText.slice(0, 120)}”). Copy the reel
           link in Instagram and paste it below.
         </p>

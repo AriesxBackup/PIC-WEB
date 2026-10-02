@@ -1,7 +1,7 @@
-# Reel Board
+# PIC REF
 
 A private website for your team's Instagram inspiration. When someone scrolls past a reel worth copying,
-they paste the link (or **Share → Reel Board** on Android), write **the idea — what we could make with it** —
+they paste the link (or **Share → PIC REF** on Android), write **the idea — what we could make with it** —
 and the whole team sees it, plays it, votes on it, discusses it and moves it through production.
 
 - **Feed** – every saved reel, playable right on the page, with the idea, tags, 🔥 votes and comments.

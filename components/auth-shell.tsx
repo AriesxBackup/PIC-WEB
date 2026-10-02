@@ -4,16 +4,20 @@ import { Logo } from "./logo";
 export function AuthShell({ appName, title, subtitle, children }: { appName: string; title: string; subtitle: ReactNode; children: ReactNode }) {
   return (
     <main className="relative flex flex-1 items-center justify-center overflow-hidden px-4 py-12">
-      <div aria-hidden className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[48rem] -translate-x-1/2 rounded-full bg-brand opacity-[0.16] blur-3xl" />
+      {/* Ambient light — one soft green breath above, one below. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-44 left-1/2 h-[26rem] w-[52rem] -translate-x-1/2 rounded-full bg-accent opacity-[0.1] blur-3xl" />
+        <div className="absolute -bottom-48 left-[6%] size-96 rounded-full bg-accent opacity-[0.06] blur-3xl" />
+      </div>
       <div className="relative w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
-          <Logo className="mb-4 size-14 drop-shadow-lg" />
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">{appName}</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">{title}</h1>
+          <Logo className="mb-4 size-16 shadow-[0_12px_36px_-12px_rgb(10_20_10/0.5)]" />
+          <p className="eyebrow">{appName}</p>
+          <h1 className="mt-2 text-3xl font-medium tracking-[-0.03em] text-fg-strong">{title}</h1>
           <p className="mt-1.5 text-sm text-muted">{subtitle}</p>
         </div>
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-xl shadow-black/10 sm:p-6 dark:shadow-black/40">
-          <span aria-hidden className="absolute inset-x-10 top-0 h-px bg-linear-to-r from-transparent via-pink-500/50 to-transparent" />
+        <div className="glass card-surface relative overflow-hidden rounded-3xl border border-border p-5 shadow-xl shadow-black/[0.08] sm:p-6 dark:shadow-black/50">
+          <span aria-hidden className="hairline-t absolute inset-x-0 top-0" />
           {children}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { MotionProvider } from "@/components/motion";
 import { ServiceWorkerRegister } from "@/components/service-worker";
 import { APP_NAME } from "@/lib/config";
 import "./globals.css";
@@ -13,6 +14,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  axes: ["opsz"],
 });
 
 export const metadata: Metadata = {
@@ -29,17 +36,23 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f6f4" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0e" },
+    { media: "(prefers-color-scheme: light)", color: "#f0f0ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a140a" },
   ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col font-sans">
-        {children}
-        <Toaster position="top-center" richColors closeButton />
+        <MotionProvider>
+          {children}
+          <Toaster position="top-center" richColors closeButton />
+        </MotionProvider>
         <ServiceWorkerRegister />
       </body>
     </html>

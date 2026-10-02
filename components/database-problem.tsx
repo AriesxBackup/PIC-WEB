@@ -5,7 +5,7 @@ export function DatabaseProblem({ appName, problem }: { appName: string; problem
   return (
     <AuthShell appName={appName} title="Database not connected" subtitle="The site is paused so nothing gets lost.">
       <p className="text-sm leading-relaxed text-fg">{problem}</p>
-      <p className="mt-3 text-sm text-muted">After changing the variable, Railway redeploys and this page goes away.</p>
+      <p className="hairline-t relative mt-3 pt-3 text-sm text-muted">After changing the variable, Railway redeploys and this page goes away.</p>
     </AuthShell>
   );
 }

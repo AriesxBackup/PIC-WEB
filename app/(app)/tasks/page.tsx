@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { CompactReel } from "@/components/compact-reel";
+import { Reveal } from "@/components/motion";
 import { EmptyState, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth/dal";
 import { listOpenTasks, listRecentlyPosted } from "@/lib/data/reels";
-import { cn } from "@/lib/utils";
+import { SegmentedTabs } from "./segmented-tabs";
 import { TaskActions } from "./task-actions";
 
 export const metadata: Metadata = { title: "Tasks" };
@@ -25,31 +25,18 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
         subtitle={everyone ? "Everything assigned, soonest due first." : "Reels the admin asked you to make, soonest due first."}
       />
 
-      <div className="mb-5 inline-flex rounded-xl border border-border bg-surface-2/60 p-1 text-sm font-medium">
-        {[
-          { href: "/tasks", label: "Mine", active: !everyone },
-          { href: "/tasks?who=all", label: "Everyone", active: everyone },
-        ].map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            aria-current={tab.active ? "page" : undefined}
-            className={cn(
-              "inline-flex min-h-10 items-center rounded-lg px-5 transition-colors duration-150 ease-brand",
-              tab.active ? "bg-surface text-fg shadow-sm shadow-black/5" : "text-muted hover:text-fg",
-            )}
-          >
-            {tab.label}
-          </Link>
-        ))}
+      <div className="mb-5">
+        <SegmentedTabs active={everyone ? "everyone" : "mine"} />
       </div>
 
       {tasks.length ? (
         <div className="space-y-2.5">
-          {tasks.map((reel) => (
-            <CompactReel key={reel.id} reel={reel} showStatus>
-              {reel.assignee?.id === user.id ? <TaskActions reelId={reel.id} status={reel.status} /> : null}
-            </CompactReel>
+          {tasks.map((reel, index) => (
+            <Reveal key={reel.id} delay={Math.min(index * 0.06, 0.45)}>
+              <CompactReel reel={reel} showStatus>
+                {reel.assignee?.id === user.id ? <TaskActions reelId={reel.id} status={reel.status} /> : null}
+              </CompactReel>
+            </Reveal>
           ))}
         </div>
       ) : (
@@ -64,8 +51,10 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
         <section className="mt-10">
           <h2 className="mb-3 font-semibold">Recently posted 🚀</h2>
           <div className="space-y-2.5">
-            {posted.map((reel) => (
-              <CompactReel key={reel.id} reel={reel} />
+            {posted.map((reel, index) => (
+              <Reveal key={reel.id} inView delay={Math.min(index * 0.06, 0.3)}>
+                <CompactReel reel={reel} />
+              </Reveal>
             ))}
           </div>
         </section>

@@ -18,9 +18,12 @@ export function CompactReel({
   children?: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-3 shadow-sm transition hover:border-pink-500/30">
-      <Link href={`/reels/${reel.id}`} className="flex gap-3">
-        <ReelThumb shortcode={reel.shortcode} className="h-16 w-11" />
+    <div className="card-surface rounded-2xl border border-border bg-surface p-3 shadow-sm shadow-black/[0.04] transition-[border-color,box-shadow] duration-200 ease-brand hover:border-accent/40 hover:shadow-md hover:shadow-black/[0.07] dark:shadow-black/30 dark:hover:shadow-black/50">
+      <Link href={`/reels/${reel.id}`} className="group flex gap-3">
+        <ReelThumb
+          shortcode={reel.shortcode}
+          className="h-16 w-11 transition-transform duration-200 ease-brand group-hover:scale-[1.04]"
+        />
         <span className="min-w-0 flex-1">
           <span className="line-clamp-3 text-sm font-medium leading-snug [overflow-wrap:anywhere]">{reel.idea}</span>
           {reel.tags.length || reel.igAuthor ? (

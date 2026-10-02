@@ -2,7 +2,7 @@ import "server-only";
 import path from "node:path";
 
 /** Display name of the site. Override with the APP_NAME environment variable. */
-export const APP_NAME = process.env.APP_NAME?.trim() || "Reel Board";
+export const APP_NAME = process.env.APP_NAME?.trim() || "PIC REF";
 
 /** True when running on Railway (Railway sets these for every deployment). */
 export const ON_RAILWAY = Boolean(

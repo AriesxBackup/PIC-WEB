@@ -31,7 +31,7 @@ export function CommentForm({ reelId, me }: { reelId: number; me: { id: number; 
             }}
             className={cn(input, "min-h-11 resize-y")}
           />
-          <SubmitButton className="h-11 shrink-0 px-3.5" pendingLabel="">
+          <SubmitButton className="h-11 w-11 shrink-0 rounded-xl p-0 shadow-[0_6px_18px_-8px_rgb(10_20_10/0.5)]" pendingLabel="">
             <SendHorizontal className="size-4" />
             <span className="sr-only">Send</span>
           </SubmitButton>

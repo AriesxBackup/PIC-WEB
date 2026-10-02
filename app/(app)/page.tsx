@@ -67,8 +67,8 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
         )
       ) : (
         <div className="grid items-start gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
-          {items.map((reel) => (
-            <ReelCard key={reel.id} reel={reel} />
+          {items.map((reel, i) => (
+            <ReelCard key={reel.id} reel={reel} index={i} />
           ))}
         </div>
       )}

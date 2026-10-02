@@ -1,8 +1,10 @@
 "use client";
 
 import { useOptimistic, useTransition } from "react";
+import { motion } from "motion/react";
 import { toast } from "sonner";
 import { toggleVoteAction } from "@/lib/actions/reels";
+import { AnimatedNumber, spring } from "./motion";
 import { cn } from "@/lib/utils";
 
 export function VoteButton({
@@ -23,7 +25,7 @@ export function VoteButton({
   }));
 
   return (
-    <button
+    <motion.button
       type="button"
       aria-pressed={state.voted}
       aria-label={state.voted ? "Remove your fire vote" : "Fire vote — we should make this"}
@@ -35,18 +37,29 @@ export function VoteButton({
           if ("error" in result) toast.error(result.error);
         })
       }
+      whileTap={{ scale: 0.88 }}
+      transition={spring}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full font-semibold tabular-nums transition active:scale-95",
+        "inline-flex items-center gap-1.5 rounded-full font-semibold tabular-nums",
         size === "lg" ? "min-h-11 px-4 text-base" : "min-h-10 px-3.5 text-sm",
         state.voted
           ? "bg-orange-500/15 text-orange-600 ring-1 ring-orange-500/30 dark:text-orange-400"
           : "bg-surface-2 text-muted hover:text-fg",
       )}
     >
-      <span aria-hidden className={cn("transition", state.voted ? "scale-110" : "grayscale")}>
-        🔥
+      <span aria-hidden className={cn(!state.voted && "grayscale")}>
+        {/* Keyed on the vote state so toggling re-runs the pop. */}
+        <motion.span
+          key={state.voted ? "voted" : "unvoted"}
+          className="inline-block"
+          initial={{ scale: 0.5 }}
+          animate={{ scale: 1 }}
+          transition={spring}
+        >
+          🔥
+        </motion.span>
       </span>
-      {state.count}
-    </button>
+      <AnimatedNumber value={state.count} />
+    </motion.button>
   );
 }

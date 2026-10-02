@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { ClipboardPaste, X } from "lucide-react";
 import { toast } from "sonner";
 import { TimeAgo } from "@/components/clock";
+import { spring } from "@/components/motion";
 import { SubmitButton } from "@/components/form-controls";
 import { ReelEmbed } from "@/components/reel-embed";
 import { TagInput } from "@/components/tag-input";
@@ -117,47 +119,74 @@ export function NewReelForm({ initialUrl, knownTags }: { initialUrl: string; kno
 
       {resolving ? <p className="text-sm text-muted">Opening the share link…</p> : null}
 
-      {existingId ? (
-        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
-          <p className="font-semibold text-amber-900 dark:text-amber-100">Already on the board 🙌</p>
-          <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
-            {duplicate ? (
-              <>
-                {duplicate.authorName ?? "Someone"} shared it <TimeAgo time={duplicate.createdAt} />.{" "}
-              </>
-            ) : null}
-            Add your idea as a comment there instead.
-          </p>
-          <Link href={`/reels/${existingId}#discussion`} className={cn(button.secondary, "mt-3")}>
-            Open it
-          </Link>
-        </div>
-      ) : reel ? (
-        // Compact by default so the idea box stays on screen (on a phone you've usually just watched it).
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 py-1.5 pl-4 pr-1.5 text-sm">
-            <span className="flex-1 font-medium text-emerald-800 dark:text-emerald-200">✓ Reel found</span>
-            <button
-              type="button"
-              onClick={() => setShowPreview((shown) => !shown)}
-              aria-expanded={showPreview}
-              className={cn(button.ghost, "text-emerald-800 hover:bg-emerald-500/10 dark:text-emerald-200")}
-            >
-              {showPreview ? "Hide preview" : "Show preview"}
-            </button>
-          </div>
-          {showPreview ? (
-            <ReelEmbed
-              key={reel.shortcode}
-              kind={reel.kind}
-              shortcode={reel.shortcode}
-              eager
-              preview={false}
-              className="mx-auto max-w-sm"
-            />
-          ) : null}
-        </div>
-      ) : null}
+      <AnimatePresence mode="wait" initial={false}>
+        {existingId ? (
+          <motion.div
+            key="duplicate"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={spring}
+            className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm shadow-lg shadow-black/5 backdrop-blur-xl"
+          >
+            <p className="font-semibold text-amber-900 dark:text-amber-100">Already on the board 🙌</p>
+            <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
+              {duplicate ? (
+                <>
+                  {duplicate.authorName ?? "Someone"} shared it <TimeAgo time={duplicate.createdAt} />.{" "}
+                </>
+              ) : null}
+              Add your idea as a comment there instead.
+            </p>
+            <Link href={`/reels/${existingId}#discussion`} className={cn(button.secondary, "mt-3")}>
+              Open it
+            </Link>
+          </motion.div>
+        ) : reel ? (
+          // Compact by default so the idea box stays on screen (on a phone you've usually just watched it).
+          <motion.div
+            key="found"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={spring}
+            className="space-y-3"
+          >
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 py-1.5 pl-4 pr-1.5 text-sm shadow-lg shadow-black/5 backdrop-blur-xl">
+              <span className="flex-1 font-medium text-emerald-800 dark:text-emerald-200">✓ Reel found</span>
+              <button
+                type="button"
+                onClick={() => setShowPreview((shown) => !shown)}
+                aria-expanded={showPreview}
+                className={cn(button.ghost, "text-emerald-800 hover:bg-emerald-500/10 dark:text-emerald-200")}
+              >
+                {showPreview ? "Hide preview" : "Show preview"}
+              </button>
+            </div>
+            <AnimatePresence initial={false}>
+              {showPreview ? (
+                <motion.div
+                  key="preview"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                  className="overflow-hidden"
+                >
+                  <ReelEmbed
+                    key={reel.shortcode}
+                    kind={reel.kind}
+                    shortcode={reel.shortcode}
+                    eager
+                    preview={false}
+                    className="mx-auto max-w-sm"
+                  />
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <Field
         label="Your idea"

@@ -21,8 +21,8 @@ export default async function SetupPage({ searchParams }: PageProps<"/setup">) {
     return (
       <AuthShell appName={APP_NAME} title="Almost ready" subtitle="This site hasn't been set up yet.">
         <p className="text-sm text-muted">
-          Open the setup link that includes the setup token (<code>/setup?token=…</code>). If you installed this
-          site, the token is the <code>SETUP_TOKEN</code> value in your settings.
+          Open the setup link that includes the setup token (<code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs text-fg">/setup?token=…</code>). If you installed this
+          site, the token is the <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs text-fg">SETUP_TOKEN</code> value in your settings.
         </p>
       </AuthShell>
     );

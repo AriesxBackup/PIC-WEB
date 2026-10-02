@@ -10,7 +10,7 @@ console.log(created ? "✨ Demo board created in demo-data/" : "Using the existi
 printDemoLogins();
 
 // Bound to this computer only — the demo passwords are public in this repo.
-const env = { ...process.env, DATA_DIR: dataDir, APP_NAME: process.env.APP_NAME || "Reel Board · Demo" };
+const env = { ...process.env, DATA_DIR: dataDir, APP_NAME: process.env.APP_NAME || "PIC REF · Demo" };
 delete env.DATABASE_URL; // the demo always uses its own local database
 const next = path.resolve("node_modules/next/dist/bin/next");
 const child = spawn(process.execPath, [next, "dev", "--hostname", "127.0.0.1", ...process.argv.slice(2)], {

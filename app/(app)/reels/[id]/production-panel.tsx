@@ -62,8 +62,10 @@ export function ProductionPanel({
                   aria-pressed={current}
                   onClick={() => changeStatus(option)}
                   className={cn(
-                    "inline-flex min-h-10 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium ring-1 ring-inset transition",
-                    current ? cn(meta.className, "ring-2") : "text-muted ring-border hover:bg-surface-2 hover:text-fg",
+                    "inline-flex min-h-10 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium ring-1 ring-inset transition duration-200 ease-brand active:scale-[0.96]",
+                    current
+                      ? cn(meta.className, "shadow-[0_0_20px_-6px_rgb(5_138_94/0.45)] ring-2")
+                      : "text-muted ring-border hover:bg-surface-2 hover:text-fg",
                     pending && !current && "opacity-60",
                   )}
                 >

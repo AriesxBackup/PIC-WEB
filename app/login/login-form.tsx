@@ -31,7 +31,7 @@ export function LoginForm({ next }: { next: string }) {
       <SubmitButton className="w-full" pendingLabel="Logging in…">
         Log in
       </SubmitButton>
-      <p className="text-center text-xs text-muted">No account yet? Ask your team admin to add you.</p>
+      <p className="hairline-t relative mt-5 pt-4 text-center text-xs text-muted">No account yet? Ask your team admin to add you.</p>
     </form>
   );
 }

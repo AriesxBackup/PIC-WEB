@@ -1,7 +1,9 @@
 "use client";
 
 import { useId, useRef, useState, type KeyboardEvent } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
+import { spring } from "@/components/motion";
 import { MAX_TAGS, SUGGESTED_TAGS, normalizeTag } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { chip, input as inputStyles } from "./ui";
@@ -58,22 +60,29 @@ export function TagInput({
         onClick={(e) => e.target === e.currentTarget && field.current?.focus()}
         className={cn(inputStyles, "flex cursor-text flex-wrap items-center gap-1.5 py-0.5")}
       >
-        {tags.map((tag) => (
-          <span
-            key={tag}
-            className="inline-flex min-h-8 items-center gap-0.5 rounded-full bg-pink-500/10 pl-3 text-sm font-medium text-pink-700 dark:text-pink-300"
-          >
-            #{tag}
-            <button
-              type="button"
-              onClick={() => setTags(tags.filter((t) => t !== tag))}
-              className="flex size-8 items-center justify-center rounded-full hover:bg-pink-500/20 active:bg-pink-500/20"
-              aria-label={`Remove tag ${tag}`}
+        <AnimatePresence initial={false} mode="popLayout">
+          {tags.map((tag) => (
+            <motion.span
+              key={tag}
+              layout
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={spring}
+              className="bg-brand-soft text-brand inline-flex min-h-8 items-center gap-0.5 rounded-full pl-3 text-sm font-medium ring-1 ring-inset ring-accent/25 backdrop-blur-sm"
             >
-              <X className="size-4" />
-            </button>
-          </span>
-        ))}
+              #{tag}
+              <button
+                type="button"
+                onClick={() => setTags(tags.filter((t) => t !== tag))}
+                className="flex size-8 items-center justify-center rounded-full transition-colors duration-200 hover:bg-accent/15 active:bg-accent/15"
+                aria-label={`Remove tag ${tag}`}
+              >
+                <X className="size-4" />
+              </button>
+            </motion.span>
+          ))}
+        </AnimatePresence>
         <input
           ref={field}
           id={inputId}

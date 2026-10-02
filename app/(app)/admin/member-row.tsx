@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { KeyRound, Pencil, Power, Trash2 } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { ActionButton, ConfirmButton, SubmitButton } from "@/components/form-controls";
+import { springSoft } from "@/components/motion";
 import { Field, FormMessage, button, input } from "@/components/ui";
 import {
   deleteMemberAction,
@@ -24,7 +26,12 @@ export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: bool
   const toggle = (next: "edit" | "password") => setPanel((current) => (current === next ? null : next));
 
   return (
-    <li className={cn("px-4 py-3.5 sm:px-5", !member.active && "bg-surface-2/60")}>
+    <li
+      className={cn(
+        "px-4 py-3.5 transition-colors duration-200 ease-brand hover:bg-surface-2/40 sm:px-5",
+        !member.active && "bg-surface-2/60",
+      )}
+    >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Avatar person={member} size="md" className={cn(!member.active && "opacity-50")} />
         <div className="min-w-0 flex-1">
@@ -32,8 +39,8 @@ export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: bool
             <span className="truncate">{member.name}</span>
             {isSelf ? <span className="text-xs text-muted">(you)</span> : null}
             {member.role === "admin" ? (
-              <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300">
-                Admin
+              <span className="bg-brand-soft text-brand rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-accent/25">
+                <span className="text-brand">Admin</span>
               </span>
             ) : null}
             {!member.active ? (
@@ -86,8 +93,32 @@ export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: bool
         </div>
       </div>
 
-      {panel === "edit" ? <EditMember member={member} onDone={() => setPanel(null)} /> : null}
-      {panel === "password" ? <ResetPassword member={member} /> : null}
+      <AnimatePresence initial={false}>
+        {panel === "edit" ? (
+          <motion.div
+            key="edit"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={springSoft}
+            className="overflow-hidden"
+          >
+            <EditMember member={member} onDone={() => setPanel(null)} />
+          </motion.div>
+        ) : null}
+        {panel === "password" ? (
+          <motion.div
+            key="password"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={springSoft}
+            className="overflow-hidden"
+          >
+            <ResetPassword member={member} />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </li>
   );
 }

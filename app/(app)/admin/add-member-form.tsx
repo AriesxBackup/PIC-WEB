@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { Copy, Dices } from "lucide-react";
 import { toast } from "sonner";
 import { SubmitButton } from "@/components/form-controls";
+import { spring, springSoft } from "@/components/motion";
 import { Field, FormMessage, button, input } from "@/components/ui";
 import { createMemberAction } from "@/lib/actions/admin";
 import type { FormState } from "@/lib/actions/types";
@@ -74,15 +76,17 @@ export function AddMemberForm({ siteUrl }: { siteUrl: string }) {
               onChange={(e) => setPassword(e.target.value)}
               className={cn(input, "font-mono")}
             />
-            <button
+            <motion.button
               type="button"
               onClick={() => setPassword(generatePassword())}
               className={cn(button.secondary, "shrink-0 px-3")}
               title="Generate a password"
+              whileTap={{ scale: 0.85, rotate: -10 }}
+              transition={spring}
             >
               <Dices className="size-4" />
               <span className="sr-only">Generate a password</span>
-            </button>
+            </motion.button>
           </div>
         </Field>
         <Field
@@ -108,29 +112,39 @@ export function AddMemberForm({ siteUrl }: { siteUrl: string }) {
         </div>
       </form>
 
-      {created ? (
-        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm">
-          <p className="font-semibold text-emerald-900 dark:text-emerald-100">✅ {created.name} was added</p>
-          <pre className="mt-2 whitespace-pre-wrap rounded-xl bg-surface p-3 font-mono text-xs leading-relaxed">{shareText}</pre>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={button.secondary}
-              onClick={() =>
-                navigator.clipboard.writeText(shareText).then(
-                  () => toast.success("Copied — paste it to them on WhatsApp/Slack"),
-                  () => toast.error("Couldn't copy. Select the text and copy it manually."),
-                )
-              }
-            >
-              <Copy className="size-4" /> Copy login details
-            </button>
-            <button type="button" className={button.ghost} onClick={() => setCreated(null)}>
-              Done
-            </button>
-          </div>
-        </div>
-      ) : null}
+      <AnimatePresence initial={false}>
+        {created ? (
+          <motion.div
+            key="created"
+            initial={{ opacity: 0, y: 14, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.96 }}
+            transition={springSoft}
+            className="glass card-surface relative overflow-hidden rounded-2xl border border-emerald-500/30 p-4 text-sm shadow-lg shadow-emerald-500/10"
+          >
+            <span aria-hidden className="absolute inset-x-8 top-0 h-px bg-linear-to-r from-transparent via-emerald-400/60 to-transparent" />
+            <p className="font-semibold text-emerald-900 dark:text-emerald-100">✅ {created.name} was added</p>
+            <pre className="mt-2 whitespace-pre-wrap rounded-xl bg-surface p-3 font-mono text-xs leading-relaxed">{shareText}</pre>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                className={button.secondary}
+                onClick={() =>
+                  navigator.clipboard.writeText(shareText).then(
+                    () => toast.success("Copied — paste it to them on WhatsApp/Slack"),
+                    () => toast.error("Couldn't copy. Select the text and copy it manually."),
+                  )
+                }
+              >
+                <Copy className="size-4" /> Copy login details
+              </button>
+              <button type="button" className={button.ghost} onClick={() => setCreated(null)}>
+                Done
+              </button>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
