@@ -11,7 +11,7 @@ export function ReelThumb({ shortcode, className }: { shortcode: string; classNa
   return (
     <span
       className={cn(
-        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand text-white shadow-inner",
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand text-white shadow-inner ring-1 ring-black/10 dark:ring-white/10",
         className,
       )}
     >

@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f5f5f7;
+  --bg: #f7f6f4;
   --surface: #ffffff;
-  --surface-2: #f0f0f4;
-  --border: #e3e3ea;
-  --fg: #121216;
-  --muted: #696975;
+  --surface-2: #f1eff2;
+  --border: #e6e3e8;
+  --fg: #17141b;
+  --muted: #6e6a78;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0b0b0f;
-    --surface: #15151b;
-    --surface-2: #1e1e26;
-    --border: #2a2a35;
-    --fg: #f3f3f7;
-    --muted: #9c9cab;
+    --bg: #0a0a0e;
+    --surface: #15141b;
+    --surface-2: #1e1d26;
+    --border: #2b2a34;
+    --fg: #f4f3f7;
+    --muted: #a3a0b0;
     color-scheme: dark;
   }
 }
@@ -31,6 +31,7 @@
   --color-muted: var(--muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --ease-brand: cubic-bezier(0.2, 0, 0, 1);
 }
 
 /* Instagram-style gradient used for the logo and primary buttons. */
@@ -38,11 +39,52 @@
   background-image: linear-gradient(120deg, #fa7e1e 0%, #d62976 45%, #962fbf 80%, #4f5bd5 100%);
 }
 
+/* The same gradient, nearly transparent — a wash of brand color behind active UI. */
+@utility bg-brand-soft {
+  background-image: linear-gradient(
+    120deg,
+    rgb(250 126 30 / 0.09) 0%,
+    rgb(214 41 118 / 0.12) 45%,
+    rgb(150 47 191 / 0.12) 80%,
+    rgb(79 91 213 / 0.09) 100%
+  );
+}
+
 @utility text-brand {
   background-image: linear-gradient(120deg, #fa7e1e 0%, #d62976 45%, #962fbf 80%, #4f5bd5 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+}
+
+/* A faint top light so raised surfaces don't read as flat fills. */
+@utility card-surface {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent 42%);
+}
+
+/* Hairline gradient edges — softer dividers than solid borders. */
+@utility hairline {
+  &::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 1px;
+    background-image: linear-gradient(90deg, transparent, rgb(214 41 118 / 0.35) 35%, rgb(79 91 213 / 0.3) 65%, transparent);
+    pointer-events: none;
+  }
+}
+
+@utility hairline-t {
+  &::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background-image: linear-gradient(90deg, transparent, rgb(214 41 118 / 0.35) 35%, rgb(79 91 213 / 0.3) 65%, transparent);
+    pointer-events: none;
+  }
 }
 
 @layer base {
@@ -53,6 +95,31 @@
   body {
     background: var(--bg);
     color: var(--fg);
+  }
+
+  /* Ambient brand glow behind the whole app (light: barely there, dark: a soft neon haze). */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(48rem 26rem at 88% -12%, rgb(214 41 118 / 0.05), transparent 62%),
+      radial-gradient(44rem 24rem at -8% -6%, rgb(79 91 213 / 0.05), transparent 58%);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body::before {
+      background-image:
+        radial-gradient(48rem 26rem at 88% -12%, rgb(214 41 118 / 0.13), transparent 62%),
+        radial-gradient(44rem 24rem at -8% -6%, rgb(79 91 213 / 0.11), transparent 58%),
+        radial-gradient(60rem 30rem at 50% 118%, rgb(150 47 191 / 0.07), transparent 60%);
+    }
+  }
+
+  ::selection {
+    background: rgb(214 41 118 / 0.22);
   }
 
   :focus-visible {

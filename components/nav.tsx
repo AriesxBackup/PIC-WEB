@@ -33,7 +33,7 @@ export function AppHeader({
   ];
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-bg/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+    <header className="hairline sticky top-0 z-30 bg-bg/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
         <Link href="/" className="flex min-h-11 min-w-0 items-center gap-2.5 font-bold tracking-tight">
           <Logo className="size-8 shrink-0" />
@@ -46,8 +46,8 @@ export function AppHeader({
               key={item.href}
               href={item.href}
               className={cn(
-                "relative inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition",
-                isActive(pathname, item.href) ? "bg-surface-2 text-fg" : "text-muted hover:text-fg",
+                "relative inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-brand",
+                isActive(pathname, item.href) ? "bg-brand-soft text-fg" : "text-muted hover:text-fg",
               )}
             >
               <item.icon className="size-4" />
@@ -65,7 +65,7 @@ export function AppHeader({
           </Link>
           <Link
             href="/settings"
-            className="rounded-full p-0.5 transition hover:ring-2 hover:ring-border"
+            className="rounded-full p-0.5 transition hover:ring-2 hover:ring-pink-500/30"
             aria-label="Your account"
             title={`${user.name} — settings`}
           >
@@ -93,8 +93,8 @@ export function BottomNav({ isAdmin, openTasks }: { isAdmin: boolean; openTasks:
       key={item.href}
       href={item.href}
       className={cn(
-        "relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition",
-        isActive(pathname, item.href) ? "text-fg" : "text-muted",
+        "relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition-colors duration-150 ease-brand",
+        isActive(pathname, item.href) ? "font-semibold text-fg" : "text-muted",
       )}
     >
       <item.icon className="size-6" />
@@ -106,7 +106,7 @@ export function BottomNav({ isAdmin, openTasks }: { isAdmin: boolean; openTasks:
   return (
     <nav
       aria-label="Main"
-      className="bottom-nav fixed inset-x-0 bottom-0 z-30 border-t border-border bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+      className="hairline-t bottom-nav fixed inset-x-0 bottom-0 z-30 bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl md:hidden"
     >
       <div className="mx-auto flex max-w-md items-center px-2">
         {left.map(renderItem)}
@@ -114,7 +114,7 @@ export function BottomNav({ isAdmin, openTasks }: { isAdmin: boolean; openTasks:
           <Link
             href="/reels/new"
             aria-label="Add a reel"
-            className="-mt-5 flex size-14 items-center justify-center rounded-2xl bg-brand text-white shadow-lg shadow-pink-500/30 transition active:scale-95"
+            className="-mt-6 flex size-14 items-center justify-center rounded-2xl bg-brand text-white shadow-xl shadow-pink-600/30 ring-4 ring-bg transition-transform duration-150 ease-brand active:scale-95"
           >
             <Plus className="size-7" strokeWidth={2.5} />
           </Link>
@@ -129,7 +129,7 @@ function Badge({ count, className }: { count: number; className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex min-w-4.5 items-center justify-center rounded-full bg-pink-600 px-1 text-[10px] font-bold leading-[18px] text-white",
+        "inline-flex min-w-4.5 items-center justify-center rounded-full bg-pink-600 px-1 text-[10px] font-bold leading-[18px] text-white ring-2 ring-bg",
         className,
       )}
     >

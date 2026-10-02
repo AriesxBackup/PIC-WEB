@@ -49,8 +49,8 @@ export function FeedFilters({
               scroll={false}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition",
-                active ? "bg-fg text-bg" : "border border-border bg-surface text-muted hover:text-fg",
+                "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors duration-150 ease-brand",
+                active ? "bg-brand text-white shadow-sm shadow-pink-600/25" : "border border-border bg-surface text-muted hover:text-fg",
               )}
             >
               {status ? (

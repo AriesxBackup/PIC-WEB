@@ -25,7 +25,7 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
         subtitle={everyone ? "Everything assigned, soonest due first." : "Reels the admin asked you to make, soonest due first."}
       />
 
-      <div className="mb-5 inline-flex rounded-xl border border-border bg-surface p-1 text-sm font-medium">
+      <div className="mb-5 inline-flex rounded-xl border border-border bg-surface-2/60 p-1 text-sm font-medium">
         {[
           { href: "/tasks", label: "Mine", active: !everyone },
           { href: "/tasks?who=all", label: "Everyone", active: everyone },
@@ -35,8 +35,8 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
             href={tab.href}
             aria-current={tab.active ? "page" : undefined}
             className={cn(
-              "inline-flex min-h-10 items-center rounded-lg px-5 transition",
-              tab.active ? "bg-fg text-bg" : "text-muted hover:text-fg",
+              "inline-flex min-h-10 items-center rounded-lg px-5 transition-colors duration-150 ease-brand",
+              tab.active ? "bg-surface text-fg shadow-sm shadow-black/5" : "text-muted hover:text-fg",
             )}
           >
             {tab.label}

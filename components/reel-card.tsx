@@ -11,7 +11,7 @@ import { VoteButton } from "./vote-button";
 /** Feed card: who shared it, the playable reel, their idea, and the team's reactions. */
 export function ReelCard({ reel }: { reel: ReelSummary }) {
   return (
-    <article className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-3 shadow-sm sm:p-4">
+    <article className="card-surface flex flex-col gap-3 rounded-2xl border border-border bg-surface p-3 shadow-sm shadow-black/5 transition-[border-color,box-shadow] duration-150 ease-brand hover:border-pink-500/25 hover:shadow-md hover:shadow-black/10 sm:p-4 dark:shadow-black/30">
       <header className="flex items-center gap-2.5">
         <Avatar person={reel.author} size="md" />
         <div className="min-w-0 flex-1 leading-tight">
@@ -23,7 +23,7 @@ export function ReelCard({ reel }: { reel: ReelSummary }) {
 
       <ReelEmbed kind={reel.kind} shortcode={reel.shortcode} author={reel.igAuthor} />
 
-      <Link href={`/reels/${reel.id}`} className="group block rounded-xl bg-surface-2 px-3.5 py-3 transition hover:bg-pink-500/5">
+      <Link href={`/reels/${reel.id}`} className="group block rounded-xl bg-surface-2 px-3.5 py-3 transition-colors duration-150 ease-brand hover:bg-brand-soft">
         <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400">💡 Idea</p>
         <p className="line-clamp-5 whitespace-pre-line text-[15px] leading-snug [overflow-wrap:anywhere]">{reel.idea}</p>
         {reel.tags.length ? (

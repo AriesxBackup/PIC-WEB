@@ -7,14 +7,15 @@ import { PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth/dal";
 import type { Status } from "@/lib/constants";
 import { listBoard } from "@/lib/data/reels";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Board" };
 
-const COLUMNS: { status: Status; hint: string }[] = [
-  { status: "new", hint: "Fresh ideas waiting for the admin" },
-  { status: "approved", hint: "Green-lit — needs someone to make it" },
-  { status: "in_production", hint: "Being shot or edited" },
-  { status: "posted", hint: "Live on our account" },
+const COLUMNS: { status: Status; hint: string; accent: string }[] = [
+  { status: "new", hint: "Fresh ideas waiting for the admin", accent: "bg-slate-400" },
+  { status: "approved", hint: "Green-lit — needs someone to make it", accent: "bg-sky-400" },
+  { status: "in_production", hint: "Being shot or edited", accent: "bg-amber-400" },
+  { status: "posted", hint: "Live on our account", accent: "bg-emerald-400" },
 ];
 const COLUMN_LIMIT = 40;
 
@@ -27,11 +28,12 @@ export default async function BoardPage() {
       <PageHeader title="Production board" subtitle="Every idea from first save to posted. Open one to move it along." />
 
       <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
-        {COLUMNS.map(({ status, hint }) => {
+        {COLUMNS.map(({ status, hint, accent }) => {
           const reels = board[status];
           return (
             <section key={status} className="w-[82vw] max-w-xs shrink-0 snap-start lg:w-auto lg:max-w-none">
               <div className="mb-3 space-y-1">
+                <span aria-hidden className={cn("mb-2.5 block h-1 w-8 rounded-full", accent)} />
                 <h2 className="flex items-center gap-2">
                   <StatusBadge status={status} />
                   <span className="text-sm font-semibold tabular-nums text-muted">{reels.length}</span>
