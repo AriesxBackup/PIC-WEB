@@ -5,11 +5,13 @@ import { KeyboardWatch } from "@/components/keyboard-watch";
 import { LiveUpdates } from "@/components/live-updates";
 import { AppHeader, BottomNav } from "@/components/nav";
 import { getCurrentUser } from "@/lib/auth/dal";
-import { APP_NAME } from "@/lib/config";
+import { DatabaseProblem } from "@/components/database-problem";
+import { APP_NAME, DATABASE_PROBLEM } from "@/lib/config";
 import { countOpenTasks } from "@/lib/data/reels";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   // Shell only — each page also checks the session itself (layouts don't re-run on navigation).
+  if (DATABASE_PROBLEM) return <DatabaseProblem appName={APP_NAME} problem={DATABASE_PROBLEM} />;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   const openTasks = await countOpenTasks(user.id);

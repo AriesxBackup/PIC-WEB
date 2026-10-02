@@ -80,6 +80,11 @@ so installing on phones and Android's *Share to* work straight away.
    your existing board up (next section).
 
 Every push to GitHub redeploys automatically. Tables are created on first start; nothing else to set up.
+
+**Check it's using Railway's database:** *Team* page → Backup → "Stored in: PostgreSQL at
+postgres.railway.internal". If `DATABASE_URL` is missing or wrong, the site shows **Database not connected**
+(and `/api/health` explains why) instead of running on a temporary database — so Railway keeps your previous
+deploy and nothing gets lost. Fix the variable and Railway redeploys automatically.
 Keep the service at **1 replica** (live updates are sent from a single server).
 
 ### Move your existing board to Railway

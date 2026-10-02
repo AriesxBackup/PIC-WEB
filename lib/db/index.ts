@@ -1,5 +1,5 @@
 import "server-only";
-import { DATABASE_URL, PGLITE_DIR } from "@/lib/config";
+import { DATABASE_PROBLEM, DATABASE_URL, PGLITE_DIR } from "@/lib/config";
 import { MIGRATIONS, migrate, openDatabase, type Database, type Queryable, type Row } from "./core";
 
 export { escapeLike, isUniqueViolation } from "./core";
@@ -13,6 +13,8 @@ const globalForDb = globalThis as unknown as {
 };
 
 export async function getDb(): Promise<Database> {
+  // Never quietly fall back to a database that would be wiped on the next deploy.
+  if (DATABASE_PROBLEM) throw new Error(DATABASE_PROBLEM);
   globalForDb.__reelBoardDb ??= openDatabase({ url: DATABASE_URL, dir: PGLITE_DIR }).catch((error) => {
     globalForDb.__reelBoardDb = undefined; // let the next request retry (e.g. database still starting)
     throw error;

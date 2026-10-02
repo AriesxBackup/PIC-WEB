@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { Download } from "lucide-react";
 import { Card, PageHeader, button } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth/dal";
+import { DATABASE_LABEL } from "@/lib/config";
 import { listTeam } from "@/lib/data/users";
 import { AddMemberForm } from "./add-member-form";
 import { MemberRow } from "./member-row";
@@ -41,7 +42,10 @@ export default async function AdminPage() {
       <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div>
           <h2 className="font-semibold">Backup</h2>
-          <p className="text-sm text-muted">Download the whole board (one SQLite file). Keep a copy somewhere safe.</p>
+          <p className="text-sm text-muted">Download the whole board as one file. Keep a copy somewhere safe.</p>
+          <p className="mt-1 text-xs text-muted">
+            Stored in: <span className="font-medium text-fg">{DATABASE_LABEL}</span>
+          </p>
         </div>
         <a href="/api/admin/backup" className={`${button.secondary} shrink-0`} download>
           <Download className="size-4" /> Download backup

@@ -34,6 +34,8 @@ export async function openDatabase(target: DatabaseTarget): Promise<Database> {
   const url = target.url?.trim();
   if (url && /^postgres(ql)?:\/\//i.test(url)) return openPostgres(url);
   if (url === "memory://") return openPglite(undefined);
+  // A URL that isn't PostgreSQL is a mistake — never silently use a different (local) database instead.
+  if (url) throw new Error(`The database URL must start with postgresql:// (got "${url.slice(0, 20)}…").`);
   return openPglite(target.dir);
 }
 
@@ -70,17 +72,33 @@ async function openPostgres(connection: string): Promise<Database> {
 
   const url = new URL(connection);
   const ssl = sslFor(url);
+  const explicitMode = Boolean(url.searchParams.get("sslmode") ?? process.env.PGSSLMODE);
   for (const key of ["sslmode", "ssl", "sslrootcert", "sslcert", "sslkey"]) url.searchParams.delete(key);
-  const pool = new pg.Pool({
-    connectionString: url.toString(),
-    ssl,
-    max: 10,
-    idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 10_000,
-  });
-  pool.on("error", () => {
-    // An idle connection dropped (e.g. database restart); the pool reconnects on the next query.
-  });
+  const makePool = (useSsl: typeof ssl) => {
+    const created = new pg.Pool({
+      connectionString: url.toString(),
+      ssl: useSsl,
+      max: 10,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+    });
+    created.on("error", () => {
+      // An idle connection dropped (e.g. database restart); the pool reconnects on the next query.
+    });
+    return created;
+  };
+
+  let pool = makePool(ssl);
+  // Like libpq's default "prefer": use TLS when the server offers it, plain otherwise.
+  if (ssl && !explicitMode) {
+    try {
+      await pool.query("SELECT 1");
+    } catch (error) {
+      if (!/does not support SSL/i.test(String((error as Error).message))) throw error;
+      await pool.end();
+      pool = makePool(false);
+    }
+  }
 
   const run = async <T>(client: { query: (text: string, params?: unknown[]) => Promise<{ rows: unknown[] }> }, text: string, params?: unknown[]) =>
     (await client.query(text, params)).rows as T[];
