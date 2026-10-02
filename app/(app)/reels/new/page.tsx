@@ -21,7 +21,7 @@ export default async function NewReelPage({ searchParams }: PageProps<"/reels/ne
           link in Instagram and paste it below.
         </p>
       ) : null}
-      <NewReelForm initialUrl={initialUrl} knownTags={listTags().map((t) => t.tag)} />
+      <NewReelForm initialUrl={initialUrl} knownTags={(await listTags()).map((t) => t.tag)} />
     </div>
   );
 }

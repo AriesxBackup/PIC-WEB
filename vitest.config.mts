@@ -12,7 +12,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
-    env: { DATABASE_FILE: ":memory:" },
+    env: { DATABASE_URL: "memory://" },
     testTimeout: 20_000,
   },
 });

@@ -28,9 +28,9 @@ async function requireAdminUser(): Promise<SessionUser | null> {
 const NOT_ADMIN = { error: "Only admins can manage the team." } as const;
 
 /** True when this change would leave the team without an active admin. */
-function removesLastAdmin(userId: number): boolean {
-  const target = getUser(userId);
-  return !!target && target.role === "admin" && target.active && countActiveAdmins() <= 1;
+async function removesLastAdmin(userId: number): Promise<boolean> {
+  const target = await getUser(userId);
+  return !!target && target.role === "admin" && target.active && (await countActiveAdmins()) <= 1;
 }
 
 export async function createMemberAction(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -46,7 +46,7 @@ export async function createMemberAction(_prev: FormState, formData: FormData): 
   if (!parsed.success) return { fields: fieldErrors(parsed.error), values };
 
   try {
-    createUser({ ...parsed.data, passwordHash: await hashPassword(parsed.data.password) });
+    await createUser({ ...parsed.data, passwordHash: await hashPassword(parsed.data.password) });
   } catch (error) {
     if (isUniqueViolation(error)) return { fields: { email: "Someone already uses this email." }, values };
     throw error;
@@ -57,18 +57,18 @@ export async function createMemberAction(_prev: FormState, formData: FormData): 
 
 export async function updateMemberAction(userId: number, _prev: FormState, formData: FormData): Promise<FormState> {
   if (!(await requireAdminUser())) return NOT_ADMIN;
-  const target = getUser(userId);
+  const target = await getUser(userId);
   if (!target) return { error: "That person no longer exists." };
 
   const raw = { name: text(formData, "name"), email: text(formData, "email"), role: text(formData, "role") };
   const parsed = memberUpdateSchema.safeParse(raw);
   if (!parsed.success) return { fields: fieldErrors(parsed.error), values: raw };
-  if (parsed.data.role !== "admin" && removesLastAdmin(userId)) {
+  if (parsed.data.role !== "admin" && (await removesLastAdmin(userId))) {
     return { error: "The team needs at least one admin. Make someone else admin first.", values: raw };
   }
 
   try {
-    updateUserProfile(userId, parsed.data);
+    await updateUserProfile(userId, parsed.data);
   } catch (error) {
     if (isUniqueViolation(error)) return { fields: { email: "Someone already uses this email." }, values: raw };
     throw error;
@@ -84,15 +84,15 @@ export async function resetMemberPasswordAction(
 ): Promise<FormState> {
   const admin = await requireAdminUser();
   if (!admin) return NOT_ADMIN;
-  const target = getUser(userId);
+  const target = await getUser(userId);
   if (!target) return { error: "That person no longer exists." };
 
   const password = passwordSchema.safeParse(text(formData, "password"));
   if (!password.success) return { fields: { password: password.error.issues[0].message } };
 
-  setUserPassword(userId, await hashPassword(password.data));
+  await setUserPassword(userId, await hashPassword(password.data));
   // Old sessions end everywhere — except this browser when admins reset their own password.
-  deleteUserSessions(userId, userId === admin.id ? await getSessionToken() : undefined);
+  await deleteUserSessions(userId, userId === admin.id ? await getSessionToken() : undefined);
   return { ok: true, message: `New password set. Share it with ${target.name}.` };
 }
 
@@ -100,10 +100,10 @@ export async function setMemberActiveAction(userId: number, active: boolean): Pr
   const admin = await requireAdminUser();
   if (!admin) return NOT_ADMIN;
   if (userId === admin.id) return { error: "You can't turn off your own account." };
-  if (!active && removesLastAdmin(userId)) return { error: "The team needs at least one active admin." };
+  if (!active && (await removesLastAdmin(userId))) return { error: "The team needs at least one active admin." };
 
-  setUserActive(userId, active);
-  if (!active) deleteUserSessions(userId);
+  await setUserActive(userId, active);
+  if (!active) await deleteUserSessions(userId);
   refresh();
   return {};
 }
@@ -112,9 +112,9 @@ export async function deleteMemberAction(userId: number): Promise<{ error?: stri
   const admin = await requireAdminUser();
   if (!admin) return NOT_ADMIN;
   if (userId === admin.id) return { error: "You can't delete your own account." };
-  if (removesLastAdmin(userId)) return { error: "The team needs at least one active admin." };
+  if ((await removesLastAdmin(userId))) return { error: "The team needs at least one active admin." };
 
-  deleteUser(userId);
+  await deleteUser(userId);
   refresh();
   return {};
 }

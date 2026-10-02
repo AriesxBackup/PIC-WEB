@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Set up" };
 // Only reachable while the database has no users: creates the first admin.
 export default async function SetupPage({ searchParams }: PageProps<"/setup">) {
   await connection(); // always check the database at request time, never at build time
-  if (countUsers() > 0) redirect("/login");
+  if ((await countUsers()) > 0) redirect("/login");
 
   const { token } = await searchParams;
   if (!isSetupAllowed(token)) {

@@ -20,7 +20,7 @@ const COLUMN_LIMIT = 40;
 
 export default async function BoardPage() {
   const user = await requireUser();
-  const board = listBoard(user.id);
+  const board = await listBoard(user.id);
 
   return (
     <>

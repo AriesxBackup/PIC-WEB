@@ -16,7 +16,7 @@ export async function updateMyNameAction(_prev: FormState, formData: FormData): 
   if (!user) redirect("/login");
   const name = nameSchema.safeParse(text(formData, "name"));
   if (!name.success) return { fields: { name: name.error.issues[0].message } };
-  updateUserName(user.id, name.data);
+  await updateUserName(user.id, name.data);
   refresh();
   return { ok: true, message: "Name updated." };
 }
@@ -35,18 +35,18 @@ export async function changeMyPasswordAction(_prev: FormState, formData: FormDat
   });
   if (!parsed.success) return { fields: fieldErrors(parsed.error) };
 
-  const hash = getPasswordHash(user.id);
+  const hash = await getPasswordHash(user.id);
   if (!hash || !(await verifyPassword(parsed.data.current, hash))) {
     return { fields: { current: "That's not your current password." } };
   }
-  setUserPassword(user.id, await hashPassword(parsed.data.password));
-  deleteUserSessions(user.id, await getSessionToken());
+  await setUserPassword(user.id, await hashPassword(parsed.data.password));
+  await deleteUserSessions(user.id, await getSessionToken());
   return { ok: true, message: "Password changed. Other devices were signed out." };
 }
 
 export async function logoutEverywhereAction(): Promise<void> {
   const user = await getCurrentUser();
-  if (user) deleteUserSessions(user.id);
+  if (user) await deleteUserSessions(user.id);
   await clearSessionCookie();
   redirect("/login");
 }

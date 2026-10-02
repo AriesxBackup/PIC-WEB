@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Log in" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   await connection(); // always check the database at request time, never at build time
-  if (countUsers() === 0) redirect("/setup");
+  if ((await countUsers()) === 0) redirect("/setup");
   const { next } = await searchParams;
   const nextPath = safeNextPath(typeof next === "string" ? next : "/");
   if (await getCurrentUser()) redirect(nextPath);

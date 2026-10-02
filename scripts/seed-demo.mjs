@@ -6,12 +6,10 @@
 // Demo logins — every demo account uses DEMO_PASSWORD below:
 //   aria@demo.team (admin) · dev@demo.team · mia@demo.team · leo@demo.team · zara@demo.team
 // Start over: stop the server and delete the demo-data folder.
-import Database from "better-sqlite3";
-import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { hashPassword } from "../lib/auth/password.ts";
-import { migrate } from "../lib/db/migrations.ts";
+import { openMigratedDatabase } from "../lib/db/core.ts";
 import { REELS } from "./sample-reels.mjs";
 
 export const DEMO_PASSWORD = "demo-board-2026";
@@ -44,81 +42,73 @@ function formatDue(date) {
 }
 
 export async function seedDemo(dataDir = path.resolve(process.env.DATA_DIR || "demo-data")) {
-  fs.mkdirSync(dataDir, { recursive: true });
-  const db = new Database(path.join(dataDir, "app.db"));
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  migrate(db);
+  const db = await openMigratedDatabase({ dir: path.join(dataDir, "pglite") });
+  try {
+    const [{ n }] = await db.query("SELECT COUNT(*)::int AS n FROM users");
+    if (n > 0) return { created: false, dataDir };
 
-  if (db.prepare("SELECT COUNT(*) AS n FROM users").get().n > 0) {
-    db.close();
-    return { created: false, dataDir };
+    const passwordHash = await hashPassword(DEMO_PASSWORD);
+    const now = Date.now();
+
+    await db.transaction(async (tx) => {
+      const ids = {};
+      const names = {};
+      for (const user of DEMO_USERS) {
+        const [row] = await tx.query(
+          "INSERT INTO users (email, name, password_hash, role, active, created_at) VALUES ($1, $2, $3, $4, TRUE, $5) RETURNING id",
+          [user.email, user.name, passwordHash, user.role, now - 30 * DAY],
+        );
+        ids[user.key] = row.id;
+        names[user.key] = user.name;
+      }
+      const comment = (reelId, authorKey, kind, body, at) =>
+        tx.query("INSERT INTO comments (reel_id, author_id, kind, body, created_at) VALUES ($1, $2, $3, $4, $5)", [
+          reelId,
+          ids[authorKey],
+          kind,
+          body,
+          at,
+        ]);
+
+      for (const reel of REELS) {
+        const createdAt = Math.round(now - reel.ago * DAY);
+        const span = Math.max(now - createdAt, HOUR); // later activity happens between sharing and now
+        const at = (fraction) => Math.round(createdAt + span * fraction);
+        const dueDate = reel.due === undefined ? null : localDate(reel.due);
+
+        const [{ id }] = await tx.query(
+          `INSERT INTO reels (shortcode, kind, idea, status, assignee_id, due_date, created_by, created_at, updated_at)
+           VALUES ($1, 'reel', $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+          [reel.code, reel.idea, reel.status, reel.assignee ? ids[reel.assignee] : null, dueDate, ids[reel.by], createdAt,
+            reel.status === "new" ? createdAt : at(0.8)],
+        );
+        for (const tag of reel.tags) {
+          await tx.query("INSERT INTO reel_tags (reel_id, tag) VALUES ($1, $2) ON CONFLICT DO NOTHING", [id, tag]);
+        }
+        for (const [i, key] of reel.votes.entries()) {
+          await tx.query("INSERT INTO votes (reel_id, user_id, created_at) VALUES ($1, $2, $3)", [id, ids[key], at(0.1 + i * 0.05)]);
+        }
+
+        // Automatic activity notes, like the app writes when the admin approves/assigns and work moves on.
+        if (reel.status !== "new") {
+          await comment(id, "aria", "event", `moved this to ${reel.status === "skipped" ? STATUS_LABEL.skipped : STATUS_LABEL.approved}`, at(0.2));
+        }
+        if (reel.assignee) {
+          await comment(id, "aria", "event", `assigned this to ${names[reel.assignee]} · due ${formatDue(dueDate)}`, at(0.25));
+        }
+        if (reel.status === "in_production" || reel.status === "posted") {
+          await comment(id, reel.assignee, "event", `moved this to ${STATUS_LABEL.in_production}`, at(0.45));
+        }
+        if (reel.status === "posted") {
+          await comment(id, reel.assignee, "event", `moved this to ${STATUS_LABEL.posted}`, at(0.75));
+        }
+        for (const [i, [key, body]] of reel.comments.entries()) await comment(id, key, "comment", body, at(0.3 + i * 0.25));
+      }
+    });
+    return { created: true, dataDir };
+  } finally {
+    await db.close();
   }
-
-  const passwordHash = await hashPassword(DEMO_PASSWORD);
-  const now = Date.now();
-
-  db.transaction(() => {
-    const ids = {};
-    const names = {};
-    const insertUser = db.prepare(
-      "INSERT INTO users (email, name, password_hash, role, active, created_at) VALUES (?, ?, ?, ?, 1, ?)",
-    );
-    for (const user of DEMO_USERS) {
-      ids[user.key] = Number(insertUser.run(user.email, user.name, passwordHash, user.role, now - 30 * DAY).lastInsertRowid);
-      names[user.key] = user.name;
-    }
-
-    const insertReel = db.prepare(
-      `INSERT INTO reels (shortcode, kind, idea, status, assignee_id, due_date, created_by, created_at, updated_at)
-       VALUES (?, 'reel', ?, ?, ?, ?, ?, ?, ?)`,
-    );
-    const insertTag = db.prepare("INSERT OR IGNORE INTO reel_tags (reel_id, tag) VALUES (?, ?)");
-    const insertVote = db.prepare("INSERT INTO votes (reel_id, user_id, created_at) VALUES (?, ?, ?)");
-    const insertComment = db.prepare(
-      "INSERT INTO comments (reel_id, author_id, kind, body, created_at) VALUES (?, ?, ?, ?, ?)",
-    );
-
-    for (const reel of REELS) {
-      const createdAt = Math.round(now - reel.ago * DAY);
-      const span = Math.max(now - createdAt, HOUR); // later activity happens between sharing and now
-      const at = (fraction) => Math.round(createdAt + span * fraction);
-      const dueDate = reel.due === undefined ? null : localDate(reel.due);
-
-      const id = Number(
-        insertReel.run(
-          reel.code,
-          reel.idea,
-          reel.status,
-          reel.assignee ? ids[reel.assignee] : null,
-          dueDate,
-          ids[reel.by],
-          createdAt,
-          reel.status === "new" ? createdAt : at(0.8),
-        ).lastInsertRowid,
-      );
-      for (const tag of reel.tags) insertTag.run(id, tag);
-      reel.votes.forEach((key, i) => insertVote.run(id, ids[key], at(0.1 + i * 0.05)));
-
-      // Automatic activity notes, like the app writes when the admin approves/assigns and work moves on.
-      if (reel.status !== "new") {
-        insertComment.run(id, ids.aria, "event", `moved this to ${reel.status === "skipped" ? STATUS_LABEL.skipped : STATUS_LABEL.approved}`, at(0.2));
-      }
-      if (reel.assignee) {
-        insertComment.run(id, ids.aria, "event", `assigned this to ${names[reel.assignee]} · due ${formatDue(dueDate)}`, at(0.25));
-      }
-      if (reel.status === "in_production" || reel.status === "posted") {
-        insertComment.run(id, ids[reel.assignee], "event", `moved this to ${STATUS_LABEL.in_production}`, at(0.45));
-      }
-      if (reel.status === "posted") {
-        insertComment.run(id, ids[reel.assignee], "event", `moved this to ${STATUS_LABEL.posted}`, at(0.75));
-      }
-      reel.comments.forEach(([key, body], i) => insertComment.run(id, ids[key], "comment", body, at(0.3 + i * 0.25)));
-    }
-  })();
-
-  db.close();
-  return { created: true, dataDir };
 }
 
 export function printDemoLogins() {

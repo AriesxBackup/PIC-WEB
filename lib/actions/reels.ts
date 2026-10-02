@@ -49,7 +49,7 @@ export async function checkReelLink(input: string): Promise<LinkCheck> {
   await signedInUser();
   const reel = await resolveInstagramUrl(input.slice(0, 2000));
   if (!reel) return { status: "invalid" };
-  const existing = findReelByShortcode(reel.shortcode);
+  const existing = await findReelByShortcode(reel.shortcode);
   return existing ? { status: "duplicate", ...reel, existing } : { status: "ok", ...reel };
 }
 
@@ -67,7 +67,7 @@ export async function createReelAction(_prev: FormState, formData: FormData): Pr
   const idea = ideaSchema.safeParse(ideaRaw);
   if (!idea.success) return { fields: { idea: idea.error.issues[0].message }, values };
 
-  const duplicate = findReelByShortcode(reel.shortcode);
+  const duplicate = await findReelByShortcode(reel.shortcode);
   if (duplicate) {
     return {
       fields: { url: "This reel is already on the board — add your idea as a comment there." },
@@ -77,7 +77,7 @@ export async function createReelAction(_prev: FormState, formData: FormData): Pr
 
   let id: number;
   try {
-    id = createReel({ shortcode: reel.shortcode, kind: reel.kind, idea: idea.data, tags, createdBy: user.id });
+    id = await createReel({ shortcode: reel.shortcode, kind: reel.kind, idea: idea.data, tags, createdBy: user.id });
   } catch (error) {
     if (isUniqueViolation(error)) {
       return { fields: { url: "Someone just added this reel. Refresh to see it." }, values };
@@ -92,7 +92,7 @@ export async function createReelAction(_prev: FormState, formData: FormData): Pr
 
 export async function updateIdeaAction(reelId: number, _prev: FormState, formData: FormData): Promise<FormState> {
   const user = await signedInUser();
-  const access = getReelAccess(reelId);
+  const access = await getReelAccess(reelId);
   if (!access) return { error: "This reel no longer exists." };
   if (!canEdit(user, access.createdBy)) return { error: "Only the person who posted it (or an admin) can edit." };
 
@@ -100,7 +100,7 @@ export async function updateIdeaAction(reelId: number, _prev: FormState, formDat
   if (!idea.success) return { fields: { idea: idea.error.issues[0].message } };
   const tags = normalizeTags(formData.getAll("tags").filter((t): t is string => typeof t === "string"));
 
-  updateReelIdea(reelId, idea.data, tags);
+  await updateReelIdea(reelId, idea.data, tags);
   publish({ type: "reel.updated", reelId, actorId: user.id });
   refresh();
   return { ok: true };
@@ -108,11 +108,11 @@ export async function updateIdeaAction(reelId: number, _prev: FormState, formDat
 
 export async function deleteReelAction(reelId: number): Promise<{ error?: string }> {
   const user = await signedInUser();
-  const access = getReelAccess(reelId);
+  const access = await getReelAccess(reelId);
   if (!access) redirect("/");
   if (!canEdit(user, access.createdBy)) return { error: "Only the person who posted it (or an admin) can delete." };
 
-  deleteReel(reelId);
+  await deleteReel(reelId);
   publish({ type: "reel.deleted", reelId, actorId: user.id });
   redirect("/");
 }
@@ -120,7 +120,7 @@ export async function deleteReelAction(reelId: number): Promise<{ error?: string
 export async function setStatusAction(reelId: number, status: Status): Promise<{ error?: string }> {
   const user = await signedInUser();
   if (!isStatus(status)) return { error: "Unknown status." };
-  const access = getReelAccess(reelId);
+  const access = await getReelAccess(reelId);
   if (!access) return { error: "This reel no longer exists." };
 
   const isAssignee = access.assigneeId === user.id;
@@ -130,9 +130,9 @@ export async function setStatusAction(reelId: number, status: Status): Promise<{
   if (!allowed) return { error: "Only an admin (or the assigned person) can change this." };
   if (access.status === status) return {};
 
-  updateReelStatus(reelId, status);
+  await updateReelStatus(reelId, status);
   const { label, emoji } = STATUS_META[status];
-  addComment(reelId, user.id, `moved this to ${label} ${emoji}`, "event");
+  await addComment(reelId, user.id, `moved this to ${label} ${emoji}`, "event");
   publish({ type: "reel.updated", reelId, actorId: user.id });
   refresh();
   return {};
@@ -141,12 +141,12 @@ export async function setStatusAction(reelId: number, status: Status): Promise<{
 export async function assignAction(reelId: number, _prev: FormState, formData: FormData): Promise<FormState> {
   const user = await signedInUser();
   if (user.role !== "admin") return { error: "Only admins can assign work." };
-  const access = getReelAccess(reelId);
+  const access = await getReelAccess(reelId);
   if (!access) return { error: "This reel no longer exists." };
 
   const assigneeRaw = text(formData, "assigneeId");
   const assigneeId = assigneeRaw ? Number(assigneeRaw) : null;
-  const assignee = assigneeId ? getUser(assigneeId) : null;
+  const assignee = assigneeId ? await getUser(assigneeId) : null;
   if (assigneeId && (!assignee || !assignee.active)) return { fields: { assigneeId: "Pick someone on the team." } };
 
   const due = dueDateSchema.safeParse(text(formData, "dueDate"));
@@ -155,11 +155,11 @@ export async function assignAction(reelId: number, _prev: FormState, formData: F
 
   if (access.assigneeId === assigneeId && access.dueDate === dueDate) return { ok: true };
 
-  updateReelAssignment(reelId, assigneeId, dueDate);
+  await updateReelAssignment(reelId, assigneeId, dueDate);
   const note = assignee
     ? `assigned this to ${assignee.name}${dueDate ? ` · due ${formatDue(dueDate)}` : ""}`
     : "removed the assignment";
-  addComment(reelId, user.id, note, "event");
+  await addComment(reelId, user.id, note, "event");
   publish({
     type: "reel.updated",
     reelId,
@@ -174,8 +174,8 @@ export async function assignAction(reelId: number, _prev: FormState, formData: F
 
 export async function toggleVoteAction(reelId: number): Promise<{ voted: boolean; count: number } | { error: string }> {
   const user = await signedInUser();
-  if (!getReelAccess(reelId)) return { error: "This reel no longer exists." };
-  const result = toggleVote(reelId, user.id);
+  if (!(await getReelAccess(reelId))) return { error: "This reel no longer exists." };
+  const result = await toggleVote(reelId, user.id);
   publish({ type: "vote", reelId, actorId: user.id });
   // Re-render with the new count so the optimistic value doesn't flicker back.
   refresh();

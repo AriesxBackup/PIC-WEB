@@ -13,14 +13,14 @@ import type { FormState } from "./types";
 export async function addCommentAction(reelId: number, _prev: FormState, formData: FormData): Promise<FormState> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  const access = getReelAccess(reelId);
+  const access = await getReelAccess(reelId);
   if (!access) return { error: "This reel no longer exists." };
 
   const raw = text(formData, "body");
   const body = commentSchema.safeParse(raw);
   if (!body.success) return { fields: { body: body.error.issues[0].message }, values: { body: raw } };
 
-  addComment(reelId, user.id, body.data);
+  await addComment(reelId, user.id, body.data);
   const notify = access.createdBy && access.createdBy !== user.id ? access.createdBy : undefined;
   publish({
     type: "comment",
@@ -35,12 +35,12 @@ export async function addCommentAction(reelId: number, _prev: FormState, formDat
 export async function deleteCommentAction(commentId: number): Promise<{ error?: string }> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  const comment = getComment(commentId);
+  const comment = await getComment(commentId);
   if (!comment) return {};
   const isOwnComment = comment.kind === "comment" && comment.authorId === user.id;
   if (!isOwnComment && user.role !== "admin") return { error: "You can only delete your own comments." };
 
-  deleteComment(commentId);
+  await deleteComment(commentId);
   publish({ type: "comment", reelId: comment.reelId, actorId: user.id });
   refresh();
   return {};

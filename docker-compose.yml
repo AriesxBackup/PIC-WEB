@@ -1,19 +1,36 @@
-# Start:            docker compose up -d --build
-# With HTTPS:       set DOMAIN in .env, point the domain's DNS at this server, then
-#                   docker compose --profile https up -d --build
+# Self-hosting without Railway (any server with Docker):
+#   docker compose up -d --build
+# With HTTPS: set DOMAIN in .env, point the domain's DNS at this server, then
+#   docker compose --profile https up -d --build
 services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: reelboard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reelboard}
+      POSTGRES_DB: reelboard
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reelboard"]
+      interval: 5s
+      retries: 10
+
   app:
     build: .
     image: reel-board
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "${PORT:-3000}:3000"
     environment:
+      DATABASE_URL: postgres://reelboard:${POSTGRES_PASSWORD:-reelboard}@db:5432/reelboard
       APP_NAME: ${APP_NAME:-Reel Board}
       SETUP_TOKEN: ${SETUP_TOKEN:-}
       TZ: ${TZ:-UTC}
-    volumes:
-      - reel-data:/data
 
   # Optional reverse proxy with automatic HTTPS (Let's Encrypt). Needed for installing the
   # app on phones and for Android's "Share to" — browsers only allow those on https://.
@@ -33,6 +50,6 @@ services:
       - caddy-config:/config
 
 volumes:
-  reel-data:
+  db-data:
   caddy-data:
   caddy-config:

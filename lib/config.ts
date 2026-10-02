@@ -4,13 +4,17 @@ import path from "node:path";
 /** Display name of the site. Override with the APP_NAME environment variable. */
 export const APP_NAME = process.env.APP_NAME?.trim() || "Reel Board";
 
-/** Folder that holds the SQLite database (mount this as a volume when self-hosting). */
+/** Local data folder (used when there's no DATABASE_URL, e.g. on your own computer). */
 // turbopackIgnore: these are runtime paths, not files the build should bundle.
 export const DATA_DIR = path.resolve(/*turbopackIgnore: true*/ process.env.DATA_DIR?.trim() || "data");
 
-/** SQLite file. DATABASE_FILE=":memory:" is handy for tests. */
-export const DATABASE_FILE =
-  process.env.DATABASE_FILE?.trim() || path.join(/*turbopackIgnore: true*/ DATA_DIR, "app.db");
+/**
+ * PostgreSQL connection string — on Railway set it to ${{Postgres.DATABASE_URL}}.
+ * Without it, the built-in PostgreSQL (PGlite) stores the board in DATA_DIR/pglite.
+ * "memory://" gives a throwaway in-memory database (tests).
+ */
+export const DATABASE_URL = process.env.DATABASE_URL?.trim() || "";
+export const PGLITE_DIR = path.join(/*turbopackIgnore: true*/ DATA_DIR, "pglite");
 
 /**
  * Optional. When set, the first-run admin setup only works via /setup?token=<SETUP_TOKEN>,

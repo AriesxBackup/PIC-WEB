@@ -3,7 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { SESSION_RENEW_MS, SESSION_TTL_MS } from "@/lib/config";
 import { SESSION_COOKIE, type Role } from "@/lib/constants";
-import { getDb } from "@/lib/db";
+import { one, sql } from "@/lib/db";
 
 export type SessionUser = {
   id: number;
@@ -17,54 +17,51 @@ function sessionId(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export function createSession(userId: number): { token: string; expiresAt: number } {
+export async function createSession(userId: number): Promise<{ token: string; expiresAt: number }> {
   const token = randomBytes(32).toString("base64url");
   const now = Date.now();
   const expiresAt = now + SESSION_TTL_MS;
-  getDb()
-    .prepare("INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)")
-    .run(sessionId(token), userId, expiresAt, now);
+  await sql("INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES ($1, $2, $3, $4)", [
+    sessionId(token),
+    userId,
+    expiresAt,
+    now,
+  ]);
   return { token, expiresAt };
 }
 
-export function validateSessionToken(token: string): SessionUser | null {
-  const db = getDb();
+export async function validateSessionToken(token: string): Promise<SessionUser | null> {
   const id = sessionId(token);
-  const row = db
-    .prepare(
-      `SELECT s.expires_at, u.id, u.email, u.name, u.role, u.active
-       FROM sessions s JOIN users u ON u.id = s.user_id
-       WHERE s.id = ?`,
-    )
-    .get(id) as
-    | { expires_at: number; id: number; email: string; name: string; role: Role; active: number }
-    | undefined;
+  const row = await one<{ expires_at: number; id: number; email: string; name: string; role: Role; active: boolean }>(
+    `SELECT s.expires_at, u.id, u.email, u.name, u.role, u.active
+     FROM sessions s JOIN users u ON u.id = s.user_id
+     WHERE s.id = $1`,
+    [id],
+  );
   if (!row) return null;
 
   const now = Date.now();
   if (row.expires_at <= now || !row.active) {
-    db.prepare("DELETE FROM sessions WHERE id = ?").run(id);
+    await sql("DELETE FROM sessions WHERE id = $1", [id]);
     return null;
   }
   if (row.expires_at - now < SESSION_RENEW_MS) {
-    db.prepare("UPDATE sessions SET expires_at = ? WHERE id = ?").run(now + SESSION_TTL_MS, id);
+    await sql("UPDATE sessions SET expires_at = $1 WHERE id = $2", [now + SESSION_TTL_MS, id]);
   }
   return { id: row.id, email: row.email, name: row.name, role: row.role };
 }
 
-export function deleteSession(token: string): void {
-  getDb().prepare("DELETE FROM sessions WHERE id = ?").run(sessionId(token));
+export async function deleteSession(token: string): Promise<void> {
+  await sql("DELETE FROM sessions WHERE id = $1", [sessionId(token)]);
 }
 
 /** Signs a user out everywhere, optionally keeping the session behind `keepToken`. */
-export function deleteUserSessions(userId: number, keepToken?: string): void {
-  getDb()
-    .prepare("DELETE FROM sessions WHERE user_id = ? AND id != ?")
-    .run(userId, keepToken ? sessionId(keepToken) : "");
+export async function deleteUserSessions(userId: number, keepToken?: string): Promise<void> {
+  await sql("DELETE FROM sessions WHERE user_id = $1 AND id <> $2", [userId, keepToken ? sessionId(keepToken) : ""]);
 }
 
-export function deleteExpiredSessions(): void {
-  getDb().prepare("DELETE FROM sessions WHERE expires_at <= ?").run(Date.now());
+export async function deleteExpiredSessions(): Promise<void> {
+  await sql("DELETE FROM sessions WHERE expires_at <= $1", [Date.now()]);
 }
 
 /** True when the browser reached us over HTTPS (directly or through a reverse proxy / tunnel). */

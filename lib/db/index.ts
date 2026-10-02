@@ -1,36 +1,42 @@
 import "server-only";
-import Database from "better-sqlite3";
-import fs from "node:fs";
-import path from "node:path";
-import { DATABASE_FILE } from "@/lib/config";
-import { MIGRATIONS, migrate } from "./migrations";
+import { DATABASE_URL, PGLITE_DIR } from "@/lib/config";
+import { MIGRATIONS, migrate, openDatabase, type Database, type Queryable, type Row } from "./core";
 
-// One connection per server process. Kept on globalThis so dev hot-reloads don't open new ones.
-const globalForDb = globalThis as unknown as { __reelBoardDb?: Database.Database; __reelBoardDbVersion?: number };
+export { escapeLike, isUniqueViolation } from "./core";
+export type { Queryable, Row } from "./core";
 
-export function getDb(): Database.Database {
-  if (!globalForDb.__reelBoardDb) {
-    if (DATABASE_FILE !== ":memory:") fs.mkdirSync(path.dirname(DATABASE_FILE), { recursive: true });
-    const db = new Database(DATABASE_FILE);
-    db.pragma("journal_mode = WAL");
-    db.pragma("foreign_keys = ON");
-    db.pragma("busy_timeout = 5000");
-    db.pragma("synchronous = NORMAL");
-    globalForDb.__reelBoardDb = db;
-  }
-  // Also runs after a dev hot-reload adds a migration while the connection is already open.
+// One database connection (pool) per server process, kept on globalThis so dev hot-reloads reuse it.
+const globalForDb = globalThis as unknown as {
+  __reelBoardDb?: Promise<Database>;
+  __reelBoardDbVersion?: number;
+  __reelBoardMigrating?: Promise<void>;
+};
+
+export async function getDb(): Promise<Database> {
+  globalForDb.__reelBoardDb ??= openDatabase({ url: DATABASE_URL, dir: PGLITE_DIR }).catch((error) => {
+    globalForDb.__reelBoardDb = undefined; // let the next request retry (e.g. database still starting)
+    throw error;
+  });
+  const db = await globalForDb.__reelBoardDb;
+  // Also runs when a dev hot-reload adds a migration while the connection is already open.
   if (globalForDb.__reelBoardDbVersion !== MIGRATIONS.length) {
-    migrate(globalForDb.__reelBoardDb);
+    globalForDb.__reelBoardMigrating ??= migrate(db).finally(() => {
+      globalForDb.__reelBoardMigrating = undefined;
+    });
+    await globalForDb.__reelBoardMigrating;
     globalForDb.__reelBoardDbVersion = MIGRATIONS.length;
   }
-  return globalForDb.__reelBoardDb;
+  return db;
 }
 
-export function isUniqueViolation(error: unknown): boolean {
-  return error instanceof Database.SqliteError && error.code === "SQLITE_CONSTRAINT_UNIQUE";
+export async function sql<T = Row>(text: string, params?: unknown[]): Promise<T[]> {
+  return (await getDb()).query<T>(text, params);
 }
 
-/** Escapes % and _ so user text can be used inside a LIKE pattern with ESCAPE '\'. */
-export function escapeLike(value: string): string {
-  return value.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+export async function one<T = Row>(text: string, params?: unknown[]): Promise<T | undefined> {
+  return (await sql<T>(text, params))[0];
+}
+
+export async function transaction<T>(fn: (tx: Queryable) => Promise<T>): Promise<T> {
+  return (await getDb()).transaction(fn);
 }

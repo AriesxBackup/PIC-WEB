@@ -31,7 +31,7 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
   };
   const limit = Math.min(Math.max(Number(one(params.limit)) || PAGE_SIZE, PAGE_SIZE), 240);
 
-  const { items, hasMore } = listReels(user.id, {
+  const { items, hasMore } = await listReels(user.id, {
     status: query.status,
     q: query.q,
     tag: query.tag,
@@ -48,7 +48,7 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
   return (
     <>
       <PageHeader title="Team feed" subtitle="Reels the team saved — and what we could make from each one." />
-      <FeedFilters query={query} tags={listTags()} people={listActivePeople()} />
+      <FeedFilters query={query} tags={await listTags()} people={await listActivePeople()} />
 
       {items.length === 0 ? (
         filtered ? (

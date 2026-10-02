@@ -2,59 +2,51 @@
 // board as new ideas, shared by the first admin — or by --as <email>. Reels already on the board are
 // skipped, so it's safe to run twice. Remove any of them from the site with "Delete".
 //
-//   npm run sample-reels                      (board in ./data)
+//   npm run sample-reels                      (local board — stop the site first)
 //   npm run sample-reels -- --as you@team.com
-//   Docker: docker compose exec app node scripts/add-sample-reels.mjs
-import Database from "better-sqlite3";
-import path from "node:path";
+//   Railway: set DATABASE_PUBLIC_URL (from the Postgres service) and run the same command.
+import { openMigratedDatabase } from "../lib/db/core.ts";
+import { databaseTarget } from "./db-target.mjs";
 import { REELS } from "./sample-reels.mjs";
 
 const args = process.argv.slice(2);
 const asEmail = args.includes("--as") ? args[args.indexOf("--as") + 1] : null;
+const target = databaseTarget();
 
-const file = process.env.DATABASE_FILE || path.join(path.resolve(process.env.DATA_DIR || "data"), "app.db");
-let db;
+const db = await openMigratedDatabase(target);
 try {
-  db = new Database(file, { fileMustExist: true });
-} catch {
-  console.error(`No board found at ${file}. Start the site and create the admin account first.`);
-  process.exit(1);
+  const [user] = asEmail
+    ? await db.query("SELECT id, name FROM users WHERE lower(email) = lower($1) AND active", [asEmail])
+    : await db.query("SELECT id, name FROM users WHERE role = 'admin' AND active ORDER BY id LIMIT 1");
+  if (!user) {
+    console.error(asEmail ? `No active account with email ${asEmail}.` : "No admin account yet — create it on the site first.");
+    process.exitCode = 1;
+  } else {
+    const now = Date.now();
+    const added = await db.transaction(async (tx) => {
+      let count = 0;
+      for (const [index, reel] of REELS.entries()) {
+        // A minute apart, so the feed shows them in a stable order (first in the list = newest).
+        const createdAt = now - index * 60_000;
+        const [row] = await tx.query(
+          `INSERT INTO reels (shortcode, kind, idea, status, created_by, created_at, updated_at)
+           VALUES ($1, 'reel', $2, 'new', $3, $4, $4) ON CONFLICT (shortcode) DO NOTHING RETURNING id`,
+          [reel.code, reel.idea, user.id, createdAt],
+        );
+        if (!row) continue;
+        for (const tag of reel.tags) {
+          await tx.query("INSERT INTO reel_tags (reel_id, tag) VALUES ($1, $2) ON CONFLICT DO NOTHING", [row.id, tag]);
+        }
+        count++;
+      }
+      return count;
+    });
+    console.log(
+      added
+        ? `Added ${added} sample reels to ${target.label} as ${user.name}. Refresh the site to see them.`
+        : "All sample reels are already on the board.",
+    );
+  }
+} finally {
+  await db.close();
 }
-db.pragma("busy_timeout = 5000");
-db.pragma("foreign_keys = ON");
-
-const user = asEmail
-  ? db.prepare("SELECT id, name FROM users WHERE email = ? COLLATE NOCASE AND active = 1").get(asEmail)
-  : db.prepare("SELECT id, name FROM users WHERE role = 'admin' AND active = 1 ORDER BY id LIMIT 1").get();
-if (!user) {
-  console.error(asEmail ? `No active account with email ${asEmail}.` : "No admin account yet — create it on the site first.");
-  process.exit(1);
-}
-
-const exists = db.prepare("SELECT 1 FROM reels WHERE shortcode = ?");
-const insertReel = db.prepare(
-  `INSERT INTO reels (shortcode, kind, idea, status, created_by, created_at, updated_at)
-   VALUES (?, 'reel', ?, 'new', ?, ?, ?)`,
-);
-const insertTag = db.prepare("INSERT OR IGNORE INTO reel_tags (reel_id, tag) VALUES (?, ?)");
-
-const now = Date.now();
-const added = db.transaction(() => {
-  let count = 0;
-  REELS.forEach((reel, index) => {
-    if (exists.get(reel.code)) return;
-    // A minute apart, so the feed shows them in a stable order (first in the list = newest).
-    const createdAt = now - index * 60_000;
-    const id = Number(insertReel.run(reel.code, reel.idea, user.id, createdAt, createdAt).lastInsertRowid);
-    for (const tag of reel.tags) insertTag.run(id, tag);
-    count++;
-  });
-  return count;
-})();
-db.close();
-
-console.log(
-  added
-    ? `Added ${added} sample reels to the board as ${user.name}. Refresh the site to see them.`
-    : "All sample reels are already on the board.",
-);

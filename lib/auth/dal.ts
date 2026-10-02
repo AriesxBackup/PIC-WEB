@@ -6,7 +6,7 @@ import { getSessionToken, validateSessionToken, type SessionUser } from "./sessi
 /** The signed-in user for this request, or null. Deduplicated per request. */
 export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   const token = await getSessionToken();
-  return token ? validateSessionToken(token) : null;
+  return token ? await validateSessionToken(token) : null;
 });
 
 /** Use in pages: sends signed-out visitors to the login screen. */

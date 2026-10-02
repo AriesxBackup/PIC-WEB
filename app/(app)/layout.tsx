@@ -12,7 +12,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   // Shell only — each page also checks the session itself (layouts don't re-run on navigation).
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  const openTasks = countOpenTasks(user.id);
+  const openTasks = await countOpenTasks(user.id);
   // Warm up connections to Instagram so the first player starts sooner.
   preconnect("https://www.instagram.com");
   preconnect("https://static.cdninstagram.com");

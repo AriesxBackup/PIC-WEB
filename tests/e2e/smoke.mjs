@@ -197,8 +197,9 @@ try {
 
   log("backup download works for the admin");
   const backup = await admin.request.get(`${BASE}/api/admin/backup`);
-  if (backup.status() !== 200 || (await backup.body()).subarray(0, 15).toString() !== "SQLite format 3") {
-    throw new Error(`backup failed: ${backup.status()}`);
+  const data = backup.status() === 200 ? await backup.json() : null;
+  if (data?.format !== "reel-board-backup" || data.users.length !== 2 || data.reels.length !== 2 || !data.comments.length) {
+    throw new Error(`backup failed: ${backup.status()} ${JSON.stringify(data)?.slice(0, 200)}`);
   }
 
   log("logout");

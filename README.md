@@ -14,7 +14,8 @@ and the whole team sees it, plays it, votes on it, discusses it and moves it thr
   off, make others admin, and download backups. There is no public sign-up.
 - **Phone friendly** – installable as an app; on Android it shows up in Instagram's share sheet.
 
-Everything runs as one small Node.js app with a built-in SQLite database. No outside services or accounts.
+The board lives in **PostgreSQL**: on Railway it uses Railway's Postgres database; on your own computer it
+uses a built-in copy of Postgres (stored in `data/pglite`), so it also runs there with zero setup.
 
 ---
 
@@ -57,18 +58,53 @@ npm start
 
   Delete the `demo-data` folder to start the demo over.
 
-## Run it for the team (Docker)
+## Host it on Railway (recommended)
 
-On the machine that will host it (a small VPS, or a computer that's always on) with
-[Docker](https://docs.docker.com/get-docker/) installed:
+[Railway](https://railway.com) runs the site and its PostgreSQL database for you, with HTTPS included —
+so installing on phones and Android's *Share to* work straight away.
 
-```bash
-cp .env.example .env      # set APP_NAME, and SETUP_TOKEN (see below)
-docker compose up -d --build
-```
+1. **Push this project to GitHub** (it's already connected to your repository).
+2. In Railway: **New Project → Deploy from GitHub repo** → pick the repository. Railway finds the
+   `Dockerfile` and `railway.json` (health check on `/api/health`) by itself.
+3. In the same project: **+ Create → Database → PostgreSQL**.
+4. Open the **web service → Variables** and add:
 
-The site is now on port 3000. The database lives in the `reel-data` Docker volume, so it survives
-restarts and updates. To update after changing code: `docker compose up -d --build` again.
+   | Variable       | Value                                                          |
+   | -------------- | -------------------------------------------------------------- |
+   | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (pick it from the suggestions)    |
+   | `SETUP_TOKEN`  | any long random text — protects the first-time setup           |
+   | `APP_NAME`     | optional, e.g. `PIC Reels`                                     |
+
+5. **Settings → Networking → Generate Domain** gives you an `https://….up.railway.app` address.
+6. Open `https://<your-domain>/setup?token=<SETUP_TOKEN>` and create the admin account — or first move
+   your existing board up (next section).
+
+Every push to GitHub redeploys automatically. Tables are created on first start; nothing else to set up.
+Keep the service at **1 replica** (live updates are sent from a single server).
+
+### Move your existing board to Railway
+
+Before anyone signs up on the Railway site, copy your current board (accounts, reels, ideas, tags,
+previews) into Railway's database from your computer:
+
+1. Railway → **Postgres service → Settings → Networking → enable Public Networking**, then copy
+   `DATABASE_PUBLIC_URL` from its **Variables** tab.
+2. In this folder (PowerShell):
+
+   ```powershell
+   $env:DATABASE_PUBLIC_URL = "postgresql://postgres:…@….proxy.rlwy.net:12345/railway"
+   npm run import -- data/app.db
+   ```
+
+   `data/app.db` is the board from the earlier SQLite version; a file from *Team → Download backup*
+   works too. Everyone keeps their email and password.
+3. Turn Public Networking off again afterwards if you like.
+
+## Run it yourself (Docker)
+
+On any server with [Docker](https://docs.docker.com/get-docker/): copy `.env.example` to `.env`
+(set `APP_NAME`, `SETUP_TOKEN`, `POSTGRES_PASSWORD`), then `docker compose up -d --build`. The site runs
+on port 3000 with its own PostgreSQL (data kept in the `db-data` volume).
 
 > **Claim your site first.** On a brand-new install, whoever opens it first creates the admin account.
 > On a public server, set `SETUP_TOKEN` in `.env` (any long random string) — then only
@@ -105,15 +141,16 @@ Each person can find these steps in **Settings** too.
 
 ## Admin notes
 
-- **Backups:** *Team → Download backup* gives you the whole board as one file. Or copy the volume:
-  `docker compose cp app:/data ./backup`.
-- **Forgot the only admin password?** On the server:
-  `docker compose exec app node scripts/reset-password.mjs you@example.com new-password`
-  (without Docker: `npm run reset-password -- you@example.com new-password`).
+- **Backups:** *Team → Download backup* gives you the whole board as one JSON file (restore it into a
+  fresh board with `npm run import -- <file>`). On Railway you can also turn on the Postgres **Backups**.
+- **Forgot the only admin password?** From this folder: `npm run reset-password -- you@example.com new-password`
+  (for the Railway site, set `$env:DATABASE_PUBLIC_URL` first, as in *Move your existing board*).
+- **Local scripts and the running site:** the built-in database can only be opened by one program at a
+  time — stop `npm start` before running `sample-reels`, `import` or `reset-password` locally.
 - **Reels that won't play:** the player is Instagram's official embed. Private or deleted reels, and some
   with licensed music, can't play outside Instagram — the card then shows a *Watch on Instagram* button.
 - **Why reels load in two steps:** each Instagram player is heavy (~50 requests), so the feed first shows a
-  still preview (fetched once from Instagram's oEmbed and kept in `data/thumbs/`) and only starts the
+  still preview (fetched once from Instagram's oEmbed and kept in the database) and only starts the
   real player for reels that are on screen.
 
 ## Settings
@@ -121,7 +158,8 @@ Each person can find these steps in **Settings** too.
 | Variable   | Default      | What it does                                         |
 | ---------- | ------------ | ---------------------------------------------------- |
 | `APP_NAME` | `Reel Board` | Name in the header, browser tab and phone home screen |
-| `DATA_DIR` | `./data`     | Folder for the SQLite database (Docker: `/data`)     |
+| `DATABASE_URL` | –        | PostgreSQL connection (Railway: `${{Postgres.DATABASE_URL}}`); empty = built-in database |
+| `DATA_DIR` | `./data`     | Where the built-in database lives (`data/pglite`)    |
 | `SETUP_TOKEN` | –         | Protects first-run admin setup: `/setup?token=…`     |
 | `DOMAIN`   | –            | Docker + Caddy only: your domain for automatic HTTPS |
 | `PORT`     | `3000`       | Port the app listens on                              |
@@ -137,6 +175,6 @@ npm run e2e         # end-to-end smoke test in your installed Chrome (needs an E
 npm run e2e:mobile  # every feature with taps on a phone-sized screen (run against `npm run demo`)
 ```
 
-Built with Next.js 16 (App Router, Server Actions), React 19, Tailwind CSS 4 and better-sqlite3.
+Built with Next.js 16 (App Router, Server Actions), React 19, Tailwind CSS 4 and PostgreSQL (`pg`, PGlite).
 Code map: `app/` pages and routes · `lib/data/` database queries · `lib/actions/` form actions ·
-`lib/db/migrations.ts` database schema · `components/` UI.
+`lib/db/core.ts` database connection + schema · `components/` UI.

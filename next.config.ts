@@ -8,10 +8,14 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: root,
   // Self-contained server bundle for the Docker image (see Dockerfile).
   output: "standalone",
-  // better-sqlite3 loads a prebuilt native binary at runtime; make sure it's copied into the bundle.
-  serverExternalPackages: ["better-sqlite3"],
+  // Database drivers are loaded from node_modules at runtime rather than bundled.
+  serverExternalPackages: ["pg", "@electric-sql/pglite"],
+  // PGlite (the built-in database used without DATABASE_URL) reads its engine files at runtime.
   outputFileTracingIncludes: {
-    "/**": ["./node_modules/better-sqlite3/prebuilds/linux*.node"],
+    "/**": [
+      "./node_modules/@electric-sql/pglite/dist/*.{js,cjs,wasm,data}",
+      "./node_modules/@electric-sql/pglite/package.json",
+    ],
   },
   poweredByHeader: false,
   // The dev-mode "N" badge would sit on the phone bottom bar; errors are still shown without it.

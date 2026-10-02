@@ -1,7 +1,11 @@
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 
-// Used by the Docker healthcheck.
-export function GET() {
-  getDb().prepare("SELECT 1").get();
-  return Response.json({ ok: true });
+// Used by Railway's and Docker's health checks: answers only once the database is reachable.
+export async function GET() {
+  try {
+    await sql("SELECT 1");
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ ok: false, error: "database unavailable" }, { status: 503 });
+  }
 }

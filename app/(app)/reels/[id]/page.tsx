@@ -29,7 +29,7 @@ export default async function ReelPage({ params, searchParams }: PageProps<"/ree
   const { id } = await params;
   const reelId = Number(id);
   if (!Number.isSafeInteger(reelId) || reelId <= 0) notFound();
-  const reel = getReel(reelId, user.id);
+  const reel = await getReel(reelId, user.id);
   if (!reel) notFound();
 
   const { added } = await searchParams;
@@ -69,7 +69,7 @@ export default async function ReelPage({ params, searchParams }: PageProps<"/ree
             idea={reel.idea}
             tags={reel.tags}
             canEdit={canEdit}
-            knownTags={canEdit ? listTags().map((t) => t.tag) : []}
+            knownTags={canEdit ? (await listTags()).map((t) => t.tag) : []}
           />
         </div>
 
@@ -122,10 +122,10 @@ export default async function ReelPage({ params, searchParams }: PageProps<"/ree
             dueDate={reel.dueDate}
             isAdmin={isAdmin}
             isAssignee={reel.assignee?.id === user.id}
-            people={isAdmin ? listActivePeople() : []}
+            people={isAdmin ? await listActivePeople() : []}
           />
 
-          <Discussion reelId={reel.id} comments={listComments(reel.id)} me={user} />
+          <Discussion reelId={reel.id} comments={await listComments(reel.id)} me={user} />
         </div>
       </div>
     </div>

@@ -15,8 +15,8 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
   const everyone = who === "all";
   const assigneeId = everyone ? undefined : user.id;
 
-  const tasks = listOpenTasks(user.id, assigneeId);
-  const posted = listRecentlyPosted(user.id, assigneeId, 6);
+  const tasks = await listOpenTasks(user.id, assigneeId);
+  const posted = await listRecentlyPosted(user.id, assigneeId, 6);
 
   return (
     <div className="mx-auto max-w-3xl">
